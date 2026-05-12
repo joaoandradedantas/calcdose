@@ -14,12 +14,12 @@
     />
     <style>
       /* ═══════════════════════════════════════════════
-      TOKENS
-      ═══════════════════════════════════════════════ */
+        TOKENS
+        ═══════════════════════════════════════════════ */
       :root {
         --bg: #eef2f9;
-        --glass: rgba(255, 255, 255, 0.82);
-        --glass2: rgba(255, 255, 255, 0.62);
+        --glass: rgba(255, 255, 255, 0.58);
+        --glass2: rgba(255, 255, 255, 0.42);
         --surface: #ffffff;
         --surface2: #f4f7fc;
         --surface3: #e8edf7;
@@ -43,10 +43,8 @@
         --text-muted: #6b7a99;
         --shadow-sm:
           0 1px 3px rgba(13, 19, 33, 0.08), 0 1px 2px rgba(13, 19, 33, 0.05);
-        --shadow:
-          0 4px 16px rgba(13, 19, 33, 0.1), 0 1px 4px rgba(13, 19, 33, 0.06);
-        --shadow-lg:
-          0 10px 40px rgba(13, 19, 33, 0.15), 0 4px 12px rgba(13, 19, 33, 0.08);
+        --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.1);
         --r-sm: 8px;
         --r-md: 12px;
         --r-lg: 16px;
@@ -55,8 +53,8 @@
       }
       [data-theme="dark"] {
         --bg: #0c0f18;
-        --glass: rgba(22, 28, 46, 0.88);
-        --glass2: rgba(22, 28, 46, 0.7);
+        --glass: rgba(18, 24, 38, 0.72);
+        --glass2: rgba(18, 24, 38, 0.56);
         --surface: #141928;
         --surface2: #1c2338;
         --surface3: #232d47;
@@ -84,8 +82,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      RESET + BASE
-      ═══════════════════════════════════════════════ */
+        RESET + BASE
+        ═══════════════════════════════════════════════ */
       *,
       *::before,
       *::after {
@@ -144,8 +142,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      APP SHELL — max 480px centered, full on mobile
-      ═══════════════════════════════════════════════ */
+        APP SHELL — max 480px centered, full on mobile
+        ═══════════════════════════════════════════════ */
       .app-shell {
         position: relative;
         z-index: 1;
@@ -180,8 +178,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      SCREENS
-      ═══════════════════════════════════════════════ */
+        SCREENS
+        ═══════════════════════════════════════════════ */
       .screen {
         display: none;
         flex-direction: column;
@@ -204,11 +202,11 @@
       }
 
       /* ═══════════════════════════════════════════════
-      TOPBAR (controls row above screens)
-      ═══════════════════════════════════════════════ */
+        TOPBAR (controls row above screens)
+        ═══════════════════════════════════════════════ */
       .topbar {
-        position: fixed;
-        top: 0;
+        position: absolute;
+        top: 0.75rem;
         left: 50%;
         transform: translateX(-50%);
         width: 100%;
@@ -217,7 +215,7 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: 0.75rem 1rem;
+        padding: 0 1rem;
         pointer-events: none;
       }
       .topbar > * {
@@ -230,7 +228,7 @@
         border-radius: 50%;
         background: var(--glass);
         border: 1px solid var(--border2);
-        backdrop-filter: blur(12px);
+        backdrop-filter: blur(20px) saturate(180%);
         color: var(--text-sec);
         cursor: pointer;
         display: flex;
@@ -261,8 +259,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      SETUP SCREEN
-      ═══════════════════════════════════════════════ */
+        SETUP SCREEN
+        ═══════════════════════════════════════════════ */
       #screen-setup {
         align-items: center;
         justify-content: center;
@@ -277,7 +275,7 @@
         border-radius: var(--r-2xl);
         padding: 2rem 1.75rem;
         box-shadow: var(--shadow-lg);
-        backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px) saturate(180%);
       }
       .setup-logo {
         display: inline-flex;
@@ -316,8 +314,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      HUB
-      ═══════════════════════════════════════════════ */
+        HUB
+        ═══════════════════════════════════════════════ */
       #screen-hub {
         justify-content: center;
         align-items: center;
@@ -439,8 +437,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      INNER HEADER
-      ═══════════════════════════════════════════════ */
+        INNER HEADER
+        ═══════════════════════════════════════════════ */
       .iheader {
         position: sticky;
         top: 0;
@@ -450,12 +448,9 @@
         gap: 0.75rem;
         padding: 0.875rem 1rem 0.875rem 1rem;
         background: var(--glass);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--border);
-        box-shadow:
-          0 1px 0 var(--border),
-          0 4px 12px rgba(13, 19, 33, 0.06);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
       .back-btn {
         width: 36px;
@@ -543,8 +538,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      CONTENT AREA
-      ═══════════════════════════════════════════════ */
+        CONTENT AREA
+        ═══════════════════════════════════════════════ */
       .content {
         flex: 1;
         padding: 1.25rem 1rem 5rem;
@@ -552,8 +547,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      GLASS CARD
-      ═══════════════════════════════════════════════ */
+        GLASS CARD
+        ═══════════════════════════════════════════════ */
       .card {
         background: var(--glass);
         border: 1px solid var(--border2);
@@ -614,8 +609,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      TABS
-      ═══════════════════════════════════════════════ */
+        TABS
+        ═══════════════════════════════════════════════ */
       .tabs-wrap {
         margin-bottom: 1.25rem;
       }
@@ -649,9 +644,13 @@
         height: 15px;
       }
       .tab-btn.active {
-        background: var(--blue);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(26, 95, 214, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      }
+
+      [data-theme="dark"] .tab-btn.active {
+        background: rgba(255, 255, 255, 0.08);
       }
       .tab-btn:hover:not(.active) {
         background: var(--blue-dim);
@@ -665,8 +664,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      FORM ELEMENTS
-      ═══════════════════════════════════════════════ */
+        FORM ELEMENTS
+        ═══════════════════════════════════════════════ */
       .field {
         margin-bottom: 1.125rem;
       }
@@ -812,8 +811,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      FREQ PILLS
-      ═══════════════════════════════════════════════ */
+        FREQ PILLS
+        ═══════════════════════════════════════════════ */
       .freq-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -876,8 +875,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      UNIT TOGGLE
-      ═══════════════════════════════════════════════ */
+        UNIT TOGGLE
+        ═══════════════════════════════════════════════ */
       .utog {
         display: flex;
         align-items: center;
@@ -926,8 +925,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      CONC PREVIEW
-      ═══════════════════════════════════════════════ */
+        CONC PREVIEW
+        ═══════════════════════════════════════════════ */
       .cprev {
         display: none;
         align-items: center;
@@ -949,8 +948,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      BUTTONS
-      ═══════════════════════════════════════════════ */
+        BUTTONS
+        ═══════════════════════════════════════════════ */
       .btn {
         width: 100%;
         padding: 0.85rem 1.25rem;
@@ -1036,8 +1035,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      RESULT BOX
-      ═══════════════════════════════════════════════ */
+        RESULT BOX
+        ═══════════════════════════════════════════════ */
       .rbox {
         display: none;
         background: var(--glass);
@@ -1183,8 +1182,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      EXAM SECTIONS
-      ═══════════════════════════════════════════════ */
+        EXAM SECTIONS
+        ═══════════════════════════════════════════════ */
       .esecs {
         display: flex;
         flex-direction: column;
@@ -1537,8 +1536,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      MODAL
-      ═══════════════════════════════════════════════ */
+        MODAL
+        ═══════════════════════════════════════════════ */
       .moverlay {
         position: fixed;
         inset: 0;
@@ -1639,8 +1638,8 @@
       }
 
       /* ═══════════════════════════════════════════════
-      RESPONSIVE — tablet / desktop
-      ═══════════════════════════════════════════════ */
+        RESPONSIVE — tablet / desktop
+        ═══════════════════════════════════════════════ */
       @media (min-width: 600px) {
         .moverlay {
           align-items: center;
