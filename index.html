@@ -1314,6 +1314,64 @@
         color: var(--text-muted);
         margin-top: 0.15rem;
       }
+      .espark {
+        width: 72px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.35rem;
+        opacity: 0.9;
+      }
+      .espark svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .espark path {
+        fill: none;
+        stroke: var(--blue);
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: 0.9;
+      }
+      .hchart-line {
+        fill: none;
+        stroke: var(--blue);
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hchart-dot {
+        fill: var(--blue);
+      }
+
+      .hchart-value {
+        fill: var(--text);
+        font-size: 10px;
+        font-weight: 700;
+        text-anchor: middle;
+      }
+
+      .hchart-date {
+        fill: var(--text-muted);
+        font-size: 8px;
+        text-anchor: middle;
+      }
+
+      .hchart {
+        width: 100%;
+        overflow-x: auto;
+        padding: 0.75rem 0 0.5rem;
+      }
+
+      .hchart svg {
+        width: 100%;
+        min-width: 320px;
+        height: auto;
+      }
       .ebadge {
         font-size: 0.6875rem;
         font-family: "JetBrains Mono", monospace;
@@ -2619,14 +2677,14 @@
 
     <script>
       /* ════════════════════════════════════════
-CONFIG
-════════════════════════════════════════ */
+      CONFIG
+      ════════════════════════════════════════ */
       var API =
         "https://script.google.com/macros/s/AKfycbyktbHPCqNnVZuJWRyuQ0qjYw4Y0Ut44zcU31zgUXsrPlv6L_C0rJg9lQ1Rs4DsdASYgA/exec";
 
       /* ════════════════════════════════════════
-ROUTING
-════════════════════════════════════════ */
+      ROUTING
+      ════════════════════════════════════════ */
       var currentUid = localStorage.getItem("cd_uid") || null;
 
       function navigate(p) {
@@ -2655,8 +2713,8 @@ ROUTING
       window.addEventListener("hashchange", renderRoute);
 
       /* ════════════════════════════════════════
-THEME
-════════════════════════════════════════ */
+      THEME
+      ════════════════════════════════════════ */
       function toggleTheme() {
         var h = document.documentElement;
         h.setAttribute(
@@ -2666,8 +2724,8 @@ THEME
       }
 
       /* ════════════════════════════════════════
-SETUP
-════════════════════════════════════════ */
+      SETUP
+      ════════════════════════════════════════ */
       function setupUser() {
         var n = document.getElementById("setup-name").value.trim();
         if (!n) return;
@@ -2681,8 +2739,8 @@ SETUP
       }
 
       /* ════════════════════════════════════════
-CALC TABS
-════════════════════════════════════════ */
+      CALC TABS
+      ════════════════════════════════════════ */
       function showTab(t, btn) {
         document.querySelectorAll(".csec").forEach(function (s) {
           s.classList.remove("active");
@@ -2695,8 +2753,8 @@ CALC TABS
       }
 
       /* ════════════════════════════════════════
-UTILS
-════════════════════════════════════════ */
+      UTILS
+      ════════════════════════════════════════ */
       function fmt(n, d) {
         if (d === undefined) d = 2;
         return parseFloat(n.toFixed(d));
@@ -2730,8 +2788,8 @@ UTILS
       }
 
       /* ════════════════════════════════════════
-HORMÔNIO
-════════════════════════════════════════ */
+      HORMÔNIO
+      ════════════════════════════════════════ */
       function hTipoChange() {
         document.getElementById("h-cw").style.display =
           document.getElementById("h-tipo").value === "Outro"
@@ -2789,8 +2847,8 @@ HORMÔNIO
       }
 
       /* ════════════════════════════════════════
-PEPTÍDEO
-════════════════════════════════════════ */
+      PEPTÍDEO
+      ════════════════════════════════════════ */
       var pu = "mg";
       function setPepUnit(u) {
         pu = u;
@@ -2881,8 +2939,8 @@ PEPTÍDEO
       }
 
       /* ════════════════════════════════════════
-EXAM DATA
-════════════════════════════════════════ */
+      EXAM DATA
+      ════════════════════════════════════════ */
       var examData = [
         {
           id: "s1",
@@ -3014,8 +3072,8 @@ EXAM DATA
       }
 
       /* ════════════════════════════════════════
-SYNC
-════════════════════════════════════════ */
+      SYNC
+      ════════════════════════════════════════ */
       var saveTimer = null;
 
       function setSync(state, txt) {
@@ -3082,8 +3140,120 @@ SYNC
       }
 
       /* ════════════════════════════════════════
-RENDER EXAMES
-════════════════════════════════════════ */
+      RENDER EXAMES
+      ════════════════════════════════════════ */
+      function historyChart(recs) {
+        if (!recs || recs.length < 2) return "";
+
+        var vals = recs
+          .slice()
+          .reverse()
+          .map(function (r) {
+            return {
+              value: parseFloat(String(r.result).replace(",", ".")),
+              date: r.date,
+            };
+          })
+          .filter(function (v) {
+            return !isNaN(v.value);
+          });
+
+        if (vals.length < 2) return "";
+
+        var w = 320;
+        var h = 140;
+        var pad = 28;
+
+        var min = Math.min(...vals.map((v) => v.value));
+        var max = Math.max(...vals.map((v) => v.value));
+
+        if (min === max) max += 1;
+
+        var step = (w - pad * 2) / (vals.length - 1);
+
+        var points = vals.map(function (v, i) {
+          var x = pad + i * step;
+
+          var y = h - pad - ((v.value - min) / (max - min)) * (h - pad * 2);
+
+          return {
+            x,
+            y,
+            value: v.value,
+            date: v.date,
+          };
+        });
+
+        var path = points
+          .map(function (p, i) {
+            return (i === 0 ? "M" : "L") + p.x + " " + p.y;
+          })
+          .join(" ");
+
+        var svg = `
+            <div class="hchart">
+            <svg viewBox="0 0 ${w} ${h}">
+                <path d="${path}" class="hchart-line"></path>
+
+                ${points
+                  .map(function (p) {
+                    return `
+                    <circle cx="${p.x}" cy="${p.y}" r="4" class="hchart-dot"></circle>
+
+                    <text x="${p.x}" y="${p.y - 10}" class="hchart-value">
+                    ${p.value}
+                    </text>
+
+                    <text x="${p.x}" y="${h - 6}" class="hchart-date">
+                    ${fd(p.date)}
+                    </text>
+                `;
+                  })
+                  .join("")}
+            </svg>
+            </div>
+        `;
+
+        return svg;
+      }
+      function sparkline(values) {
+        if (!values || values.length < 2) return "";
+
+        var nums = values
+          .map((v) => parseFloat(String(v).replace(",", ".")))
+          .filter((v) => !isNaN(v));
+
+        if (nums.length < 2) return "";
+
+        var w = 72;
+        var h = 28;
+        var pad = 3;
+
+        var min = Math.min(...nums);
+        var max = Math.max(...nums);
+
+        if (min === max) {
+          max += 1;
+        }
+
+        var step = (w - pad * 2) / (nums.length - 1);
+
+        var points = nums.map((n, i) => {
+          var x = pad + i * step;
+
+          var y = h - pad - ((n - min) / (max - min)) * (h - pad * 2);
+
+          return `${x},${y}`;
+        });
+
+        return `
+                <div class="espark">
+                <svg viewBox="0 0 ${w} ${h}">
+                    <path d="M${points.join(" L ")}"></path>
+                </svg>
+                </div>
+                `;
+      }
       function renderExams() {
         var c = document.getElementById("exam-container");
         if (!c) return;
@@ -3212,6 +3382,7 @@ RENDER EXAMES
                   esc(lat.ref) +
                   "</strong></div>";
               h += '<div class="ehist-title">Histórico completo</div>';
+              h += historyChart(recs);
               recs.forEach(function (r, i) {
                 var delta = "";
                 if (i < recs.length - 1) {
@@ -3278,8 +3449,8 @@ RENDER EXAMES
       }
 
       /* ════════════════════════════════════════
-EXAM MODAL
-════════════════════════════════════════ */
+      EXAM MODAL
+      ════════════════════════════════════════ */
       function openExamM(sid, en) {
         document.getElementById("m-sid").value = sid;
         document.getElementById("m-ekey").value = en;
@@ -3334,8 +3505,8 @@ EXAM MODAL
       }
 
       /* ════════════════════════════════════════
-SECTION
-════════════════════════════════════════ */
+      SECTION
+      ════════════════════════════════════════ */
       function openAddExM(sid) {
         document.getElementById("m-addsec").value = sid;
         document.getElementById("m-addname").value = "";
@@ -3391,8 +3562,8 @@ SECTION
       }
 
       /* ════════════════════════════════════════
-MODALS
-════════════════════════════════════════ */
+      MODALS
+      ════════════════════════════════════════ */
       function closeM(id) {
         document.getElementById(id).classList.remove("show");
       }
@@ -3401,8 +3572,8 @@ MODALS
       }
 
       /* ════════════════════════════════════════
-INIT
-════════════════════════════════════════ */
+      INIT
+      ════════════════════════════════════════ */
       if (currentUid) {
         loadCloud();
       } else {
