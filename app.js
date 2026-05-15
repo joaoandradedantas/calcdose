@@ -7,32 +7,72 @@ var API =
 /* ════════════════════════════════════════
       ROUTING
       ════════════════════════════════════════ */
-var currentUid = localStorage.getItem("cd_uid") || null;
+/*
+    ROUTING
+======================================== */
+
+var currentUid = null;
+
+async function initUser() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    await signIn("teste@calcdose.com", "123456");
+
+    const newUser = await getCurrentUser();
+
+    if (!newUser) {
+      console.log("Falha login");
+      return;
+    }
+
+    currentUid = newUser.id;
+  } else {
+    currentUid = user.id;
+  }
+
+  console.log("UID:", currentUid);
+
+  await loadCloud();
+
+  renderRoute();
+}
 
 function navigate(p) {
   window.location.hash = p;
 }
 
 function renderRoute() {
-  var h = window.location.hash.replace("#", "") || "";
   if (!currentUid) {
-    showOnly("setup");
     return;
   }
+
+  var h = window.location.hash.replace("#", "") || "";
+
   var valid = ["hub", "calc", "exames"];
-  if (valid.indexOf(h) === -1) h = "hub";
+
+  if (valid.indexOf(h) === -1) {
+    h = "hub";
+  }
+
   showOnly(h);
 }
 
 function showOnly(name) {
-  ["setup", "hub", "calc", "exames"].forEach(function (s) {
+  ["hub", "calc", "exames"].forEach(function (s) {
     var el = document.getElementById("screen-" + s);
-    el.classList.toggle("active", s === name);
+
+    if (el) {
+      el.classList.toggle("active", s === name);
+    }
   });
+
   window.scrollTo(0, 0);
 }
 
 window.addEventListener("hashchange", renderRoute);
+
+initUser();
 
 /* ════════════════════════════════════════
       THEME
