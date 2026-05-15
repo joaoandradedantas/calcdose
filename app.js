@@ -16,26 +16,88 @@ var currentUid = null;
 async function initUser() {
   const user = await getCurrentUser();
 
-  if (!user) {
-    await signIn("teste@calcdose.com", "123456");
-
-    const newUser = await getCurrentUser();
-
-    if (!newUser) {
-      console.log("Falha login");
-      return;
-    }
-
-    currentUid = newUser.id;
-  } else {
+  if (user) {
     currentUid = user.id;
+
+    console.log("UID:", currentUid);
+
+    await loadCloud();
+    renderRoute();
+    navigate("hub");
+    return;
   }
 
-  console.log("UID:", currentUid);
+  showOnly("setup");
+}
+async function loginUser() {
+  const email = document.getElementById("login-email").value.trim();
+
+  const password = document.getElementById("login-password").value.trim();
+
+  if (!email || !password) {
+    alert("Preencha email e senha");
+    return;
+  }
+
+  const { data, error } = await sb.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert("Email ou senha inválidos");
+    return;
+  }
+
+  currentUid = data.user.id;
 
   await loadCloud();
-
   renderRoute();
+  navigate("hub");
+}
+
+async function createAccount() {
+  const email = document.getElementById("login-email").value.trim();
+
+  const password = document.getElementById("login-password").value.trim();
+
+  if (!email || !password) {
+    alert("Preencha email e senha");
+    return;
+  }
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  alert("Conta criada com sucesso!");
+
+  currentUid = data.user.id;
+
+  await loadCloud();
+  renderRoute();
+  navigate("hub");
+}
+
+async function recoverPassword() {
+  const email = prompt("Digite seu email:");
+
+  if (!email) return;
+
+  const { error } = await sb.auth.resetPasswordForEmail(email);
+
+  if (error) {
+    alert("Erro ao enviar email");
+    return;
+  }
+
+  alert("Email de recuperação enviado!");
 }
 
 function navigate(p) {
@@ -44,6 +106,7 @@ function navigate(p) {
 
 function renderRoute() {
   if (!currentUid) {
+    showOnly("setup");
     return;
   }
 
@@ -59,7 +122,7 @@ function renderRoute() {
 }
 
 function showOnly(name) {
-  ["hub", "calc", "exames"].forEach(function (s) {
+  ["setup", "hub", "calc", "exames"].forEach(function (s) {
     var el = document.getElementById("screen-" + s);
 
     if (el) {
@@ -88,17 +151,6 @@ function toggleTheme() {
 /* ════════════════════════════════════════
       SETUP
       ════════════════════════════════════════ */
-function setupUser() {
-  var n = document.getElementById("setup-name").value.trim();
-  if (!n) return;
-  var uid =
-    n.toLowerCase().replace(/\s+/g, "_") +
-    "_" +
-    Math.random().toString(36).slice(2, 7);
-  localStorage.setItem("cd_uid", uid);
-  currentUid = uid;
-  loadCloud();
-}
 
 /* ════════════════════════════════════════
       CALC TABS
