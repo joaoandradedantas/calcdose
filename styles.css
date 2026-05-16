@@ -136,6 +136,7 @@ body::before {
   max-width: 390px;
   margin: 0 auto;
   min-height: 100dvh;
+  overflow: hidden;
 }
 
 /* On larger screens: sho w as phone-like container */
@@ -149,7 +150,7 @@ body::before {
   }
   .app-shell {
     border-radius: var(--r-2xl);
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--shadow-lg);
     min-height: auto;
   }
@@ -166,6 +167,7 @@ body::before {
         SCREENS
         ═══════════════════════════════════════════════ */
 .screen {
+  position: relative;
   display: none;
   flex-direction: column;
   min-height: 100dvh;
@@ -173,6 +175,8 @@ body::before {
 }
 .screen.active {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   animation: fadeUp 0.22s ease;
 }
 @keyframes fadeUp {
@@ -191,20 +195,17 @@ body::before {
         ═══════════════════════════════════════════════ */
 .topbar {
   position: absolute;
-  top: 0.75rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  z-index: 999;
+  top: 40px;
+  right: 40px;
+  z-index: 20;
+
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 1rem;
-  pointer-events: none;
+  gap: 8px;
 }
-.topbar > * {
-  pointer-events: all;
+#screen-setup .topbar {
+  top: 36px;
+  right: 36px;
 }
 
 .theme-btn {
@@ -247,6 +248,7 @@ body::before {
         SETUP SCREEN
         ═══════════════════════════════════════════════ */
 #screen-setup {
+  position: relative;
   align-items: center;
   justify-content: center;
   padding: 2rem 1.5rem;
@@ -303,22 +305,17 @@ body::before {
         HUB
         ═══════════════════════════════════════════════ */
 #screen-hub {
-  justify-content: center;
-  align-items: center;
-  padding: 5rem 1.5rem 2rem;
-  text-align: center;
-  gap: 0;
-  background: var(--bg);
+  position: relative;
+  min-height: 100dvh;
+  padding: 2rem 1.25rem;
+
+  display: flex;
+  justify-content: flex-start;
 }
 .hub-logo {
-  display: inline-flex;
-  align-items: baseline;
-  line-height: 1;
-  background: #fff;
-  padding: 0.25rem 1rem 0.3rem;
-  border-radius: 999px;
-  box-shadow: var(--shadow);
-  margin-bottom: 0.75rem;
+  transform: scale(0.78);
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
 }
 .hub-lc {
   font-family: "Inter", sans-serif;
@@ -343,11 +340,21 @@ body::before {
   margin-bottom: 2.5rem;
 }
 .hub-grid {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.875rem;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.hub-wrap {
   width: 100%;
-  max-width: 340px;
+  padding: 2rem 1.5rem 3rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
 }
 .hub-btn {
   display: flex;
@@ -1730,6 +1737,10 @@ select option {
   border-radius: 28px;
   padding: 36px 28px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  width: min(420px, 100%);
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .setup-logo {
@@ -1859,15 +1870,26 @@ select option {
   cursor: pointer;
 }
 .logout-btn {
-  margin-top: 24px;
-  border: none;
-  background: #f3f4f6;
-  color: #344054;
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 14px;
+  position: absolute;
+  top: 28px;
+  left: 28px;
+
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  background: var(--glass);
+  border: 1px solid var(--border2);
+  backdrop-filter: blur(20px) saturate(180%);
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
   font-weight: 600;
+  z-index: 20;
 }
 .social-btn {
   width: 100%;
@@ -1945,4 +1967,30 @@ select option {
 .btn-blue:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+/* LOGIN + DARK MODE */
+
+[data-theme="dark"] .setup-card {
+  background: #171717;
+  color: #fff;
+}
+
+[data-theme="dark"] .setup-title,
+[data-theme="dark"] .setup-desc,
+[data-theme="dark"] label {
+  color: #fff;
+}
+
+[data-theme="dark"] input {
+  background: #242424;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+[data-theme="dark"] input::placeholder {
+  color: #8a8a8a;
+}
+
+[data-theme="dark"] .btn {
+  border-color: #333;
 }

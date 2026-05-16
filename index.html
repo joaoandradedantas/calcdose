@@ -36,6 +36,7 @@
               d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
             />
           </svg>
+
           <svg
             class="icon-moon"
             viewBox="0 0 24 24"
@@ -47,7 +48,6 @@
           </svg>
         </button>
       </div>
-
       <!-- ══ SETUP ══════════════════════════════════ -->
 
       <div id="screen-setup" class="screen">
@@ -97,21 +97,9 @@
       </div>
 
       <!-- ══ HUB ════════════════════════════════════ -->
-
       <div id="screen-hub" class="screen">
-        <div
-          class="hub-wrap"
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            padding: 5rem 1.5rem 2rem;
-            text-align: center;
-            gap: 0;
-          "
-        >
+        <button class="logout-btn" onclick="signOut()">Sair</button>
+        <div class="hub-wrap">
           <div class="hub-logo" aria-label="CalcDose">
             <span class="hub-lc">Calc</span><span class="hub-ld">Dose</span>
           </div>
@@ -154,7 +142,6 @@
         <p class="hub-footer">
           CalcDose · Uso educacional<br />Não substitui orientação médica
         </p>
-        <button class="logout-btn" onclick="signOut()">Sair</button>
       </div>
 
       <!-- ══ CALCULADORAS ════════════════════════════ -->
