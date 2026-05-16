@@ -203,9 +203,15 @@ body::before {
   align-items: center;
   gap: 8px;
 }
-#screen-setup .topbar {
+
+.app-shell[data-screen="setup"] .topbar {
   top: 36px;
   right: 36px;
+}
+
+.app-shell[data-screen="hub"] .topbar {
+  top: 28px;
+  right: 28px;
 }
 
 .theme-btn {
@@ -309,7 +315,6 @@ body::before {
   min-height: 100dvh;
   padding: 2rem 1.25rem;
 
-  display: flex;
   justify-content: flex-start;
 }
 .hub-logo {

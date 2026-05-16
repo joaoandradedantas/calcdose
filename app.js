@@ -12,6 +12,63 @@ var API =
 ======================================== */
 
 var currentUid = null;
+var passwordRecoveryHandled = false;
+
+function authRedirectUrl() {
+  return window.location.href.split("#")[0].split("?")[0];
+}
+
+async function finishPasswordRecovery() {
+  if (passwordRecoveryHandled) return;
+
+  passwordRecoveryHandled = true;
+
+  const password = prompt("Digite sua nova senha:");
+
+  if (!password) {
+    alert("Redefinição de senha cancelada.");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  const confirmPassword = prompt("Confirme sua nova senha:");
+
+  if (password !== confirmPassword) {
+    alert("As senhas não conferem.");
+    return;
+  }
+
+  const { error } = await sb.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    alert("Erro ao atualizar senha: " + error.message);
+    return;
+  }
+
+  alert("Senha atualizada com sucesso!");
+
+  const user = await getCurrentUser();
+
+  if (user) {
+    currentUid = user.id;
+    await loadCloud();
+    navigate("hub");
+  } else {
+    showOnly("setup");
+  }
+}
+
+sb.auth.onAuthStateChange(function (event) {
+  if (event === "PASSWORD_RECOVERY") {
+    finishPasswordRecovery();
+  }
+});
 
 async function initUser() {
   const user = await getCurrentUser();
@@ -86,18 +143,34 @@ async function createAccount() {
 }
 
 async function recoverPassword() {
-  const email = prompt("Digite seu email:");
+  const typedEmail = document.getElementById("login-email").value.trim();
+  const email = typedEmail || prompt("Digite seu email:");
 
   if (!email) return;
 
-  const { error } = await sb.auth.resetPasswordForEmail(email);
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: authRedirectUrl(),
+  });
 
   if (error) {
-    alert("Erro ao enviar email");
+    alert("Erro ao enviar email: " + error.message);
     return;
   }
 
   alert("Email de recuperação enviado!");
+}
+
+async function loginWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: authRedirectUrl(),
+    },
+  });
+
+  if (error) {
+    alert("Erro ao iniciar login com Google: " + error.message);
+  }
 }
 
 function navigate(p) {
@@ -122,6 +195,11 @@ function renderRoute() {
 }
 
 function showOnly(name) {
+  var shell = document.querySelector(".app-shell");
+  if (shell) {
+    shell.setAttribute("data-screen", name);
+  }
+
   ["setup", "hub", "calc", "exames"].forEach(function (s) {
     var el = document.getElementById("screen-" + s);
 
