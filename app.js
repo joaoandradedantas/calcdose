@@ -543,11 +543,26 @@ var examData = [
 ];
 var records = {};
 var openSecs = {};
+var olderHistoryStore = {};
 
 function getRecs(sid, en) {
   if (!records[sid]) records[sid] = {};
   if (!records[sid][en]) records[sid][en] = [];
   return records[sid][en];
+}
+
+function recTime(r) {
+  var dateTime = r && r.date ? new Date(r.date + "T00:00:00").getTime() : 0;
+  var createdTime = r && r.createdAt ? new Date(r.createdAt).getTime() : 0;
+  if (isNaN(dateTime)) dateTime = 0;
+  if (isNaN(createdTime)) createdTime = 0;
+  return dateTime * 100000000 + createdTime;
+}
+
+function sortRecs(recs) {
+  return (recs || []).slice().sort(function (a, b) {
+    return recTime(b) - recTime(a);
+  });
 }
 
 /* ════════════════════════════════════════
@@ -755,6 +770,7 @@ function renderExams() {
   var c = document.getElementById("exam-container");
   if (!c) return;
   c.innerHTML = "";
+  olderHistoryStore = {};
 
   examData.forEach(function (sec) {
     var isOpen = openSecs[sec.id];
@@ -788,14 +804,17 @@ function renderExams() {
     // Section body
     h += '<div class="esbody"><div class="elist">';
     (sec.exams || []).forEach(function (en) {
-      var recs = getRecs(sec.id, en)
-        .slice()
-        .sort(function (a, b) {
-          return new Date(b.date || 0) - new Date(a.date || 0);
-        });
+      var recs = sortRecs(getRecs(sec.id, en));
+      var recentRecs = recs.slice(0, 4);
+      var olderRecs = recs.slice(4, 10);
       var lat = recs[0];
       var bid = "eh-" + sec.id + "_" + en.replace(/[^a-z0-9]/gi, "_");
+      var oldId = "old-" + sec.id + "_" + en.replace(/[^a-z0-9]/gi, "_");
       var count = recs.length;
+      olderHistoryStore[oldId] = {
+        title: en,
+        recs: olderRecs,
+      };
 
       h += '<div class="eitem">';
       // Main row
@@ -879,8 +898,8 @@ function renderExams() {
             esc(lat.ref) +
             "</strong></div>";
         h += '<div class="ehist-title">Histórico completo</div>';
-        h += historyChart(recs);
-        recs.forEach(function (r, i) {
+        h += historyChart(recentRecs);
+        recentRecs.forEach(function (r, i) {
           var delta = "";
           if (i < recs.length - 1) {
             var c2 = parseFloat(r.result),
@@ -907,6 +926,17 @@ function renderExams() {
           h += delta + "</div>";
           if (r.notes) h += '<div class="hnotes">' + esc(r.notes) + "</div>";
         });
+        if (olderRecs.length > 0) {
+          h +=
+            '<button class="older-hist-btn" onclick="openOlderHist(\'' +
+            oldId +
+            "')\">";
+          h +=
+            '<span>Exames anteriores</span><span class="older-count">' +
+            olderRecs.length +
+            "</span>";
+          h += "</button>";
+        }
         h += "</div>"; // ehist
       }
 
@@ -941,6 +971,37 @@ function toggleHist(id) {
   if (btn) btn.classList.toggle("open");
 }
 
+function openOlderHist(id) {
+  var data = olderHistoryStore[id];
+  if (!data) return;
+
+  document.getElementById("m-oldhist-ttl").textContent =
+    "Exames anteriores - " + data.title;
+
+  var body = document.getElementById("m-oldhist-list");
+  body.innerHTML = "";
+
+  if (!data.recs.length) {
+    body.innerHTML = '<div class="empty-history">Nenhum exame anterior.</div>';
+  } else {
+    data.recs.forEach(function (r) {
+      var row = '<div class="oldhist-row">';
+      row += '<div class="hdot"></div>';
+      row += '<div class="hdate">' + (r.date ? fd(r.date) : "-") + "</div>";
+      row +=
+        '<div class="hval">' +
+        esc(r.result) +
+        (r.unit ? " " + esc(r.unit) : "") +
+        "</div>";
+      row += "</div>";
+      if (r.notes) row += '<div class="hnotes">' + esc(r.notes) + "</div>";
+      body.innerHTML += row;
+    });
+  }
+
+  document.getElementById("m-oldhist").classList.add("show");
+}
+
 /* ════════════════════════════════════════
       EXAM MODAL
       ════════════════════════════════════════ */
@@ -956,9 +1017,9 @@ function openExamM(sid, en) {
     .toISOString()
     .slice(0, 10);
   document.getElementById("m-notes").value = "";
-  var recs = getRecs(sid, en);
+  var recs = sortRecs(getRecs(sid, en));
   if (recs.length > 0) {
-    var l = recs[recs.length - 1];
+    var l = recs[0];
     if (l.unit) document.getElementById("m-unit").value = l.unit;
     if (l.ref) document.getElementById("m-ref").value = l.ref;
   }
@@ -980,7 +1041,9 @@ function saveExam() {
     ref: document.getElementById("m-ref").value.trim(),
     date: document.getElementById("m-date").value,
     notes: document.getElementById("m-notes").value.trim(),
+    createdAt: new Date().toISOString(),
   });
+  records[sid][en] = sortRecs(records[sid][en]).slice(0, 10);
   openSecs[sid] = true;
   closeM("m-exam");
   renderExams();
@@ -991,7 +1054,7 @@ function delRec(sid, en) {
   var r = getRecs(sid, en);
   if (!r.length) return;
   if (!confirm('Remover o registro mais recente de "' + en + '"?')) return;
-  r.pop();
+  records[sid][en] = sortRecs(r).slice(1);
   renderExams();
   scheduleSave();
 }

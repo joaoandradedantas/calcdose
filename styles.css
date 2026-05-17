@@ -176,7 +176,7 @@ body::before {
 .screen.active {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   animation: fadeUp 0.22s ease;
 }
 @keyframes fadeUp {
@@ -205,13 +205,20 @@ body::before {
 }
 
 .app-shell[data-screen="setup"] .topbar {
-  top: 36px;
-  right: 36px;
+  top: max(18px, env(safe-area-inset-top));
+  right: 18px;
 }
 
 .app-shell[data-screen="hub"] .topbar {
   top: 28px;
   right: 28px;
+}
+
+.app-shell[data-screen="calc"] .topbar,
+.app-shell[data-screen="exames"] .topbar {
+  top: 13px;
+  right: 16px;
+  z-index: 120;
 }
 
 .theme-btn {
@@ -444,7 +451,9 @@ body::before {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.875rem 1rem 0.875rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.875rem 4rem 0.875rem 1rem;
   background: var(--glass);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -487,7 +496,7 @@ body::before {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-right: 2.75rem;
+  margin-right: 0;
 }
 .sbadge {
   display: flex;
@@ -540,6 +549,7 @@ body::before {
         ═══════════════════════════════════════════════ */
 .content {
   flex: 1;
+  width: 100%;
   padding: 1.25rem 1rem 5rem;
   overflow-y: auto;
 }
@@ -1361,14 +1371,15 @@ select option {
 
 .hchart {
   width: 100%;
-  overflow-x: auto;
-  padding: 0.75rem 0 0.5rem;
+  overflow: hidden;
+  padding: 0.75rem 0.25rem 0.5rem;
 }
 
 .hchart svg {
   width: 100%;
-  min-width: 320px;
+  max-width: 100%;
   height: auto;
+  display: block;
 }
 .hchart-grid {
   stroke: rgba(148, 163, 184, 0.35);
@@ -1525,6 +1536,57 @@ select option {
   padding-left: 1rem;
   font-style: italic;
   margin-top: 0.15rem;
+}
+
+.older-hist-btn {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.older-count {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--blue-dim);
+  border: 1px solid var(--border2);
+  color: var(--blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+}
+
+.oldhist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.oldhist-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.empty-history {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 1rem 0;
+  text-align: center;
 }
 
 /* Expand history button */
@@ -1968,6 +2030,41 @@ select option {
   flex: 1;
   height: 1px;
   background: #eaecf0;
+}
+
+.auth-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.auth-actions a {
+  color: var(--blue) !important;
+  cursor: pointer;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+.auth-actions a:hover {
+  color: var(--blue-h) !important;
+}
+
+.google-logo {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.social-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
 }
 .btn-blue:hover {
   transform: translateY(-1px);
