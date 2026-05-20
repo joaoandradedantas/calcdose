@@ -154,6 +154,24 @@
               <span class="hub-label">Exames</span>
               <span class="hub-desc">Registre e acompanhe</span>
             </button>
+            <button class="hub-btn amber" onclick="navigate('metricas')">
+              <div class="hub-ico">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 19V5" />
+                  <path d="M4 19h16" />
+                  <rect x="7" y="10" width="3" height="6" rx="1" />
+                  <rect x="12" y="7" width="3" height="9" rx="1" />
+                  <rect x="17" y="4" width="3" height="12" rx="1" />
+                </svg>
+              </div>
+              <span class="hub-label">Métricas</span>
+              <span class="hub-desc">Medidas e composição</span>
+            </button>
           </div>
         </div>
         <p class="hub-footer">
@@ -805,6 +823,143 @@
         </div>
       </div>
 
+      <!-- ══ MÉTRICAS ════════════════════════════════ -->
+
+      <div id="screen-metricas" class="screen">
+        <div class="iheader">
+          <button class="back-btn" onclick="navigate('hub')">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <h1>Métricas</h1>
+        </div>
+        <div class="content">
+          <div id="metric-summary" class="metric-summary"></div>
+
+          <div class="metric-sticky-tabs">
+            <div class="tabs metric-tabs">
+              <button id="metric-tab-body" class="tab-btn active" onclick="setMetricTab('body')">
+                Medidas
+              </button>
+              <button id="metric-tab-composition" class="tab-btn" onclick="setMetricTab('composition')">
+                Bioimped&acirc;ncia
+              </button>
+            </div>
+          </div>
+
+          <div id="metric-active-content"></div>
+
+          <div class="metric-v1-legacy" hidden>
+          <div class="metrics-intro">
+            <span>Acompanhamento corporal</span>
+            <strong>Compare o registro atual com o anterior.</strong>
+          </div>
+
+          <div class="metric-panel">
+            <div class="metric-panel-head">
+              <div>
+                <span class="metric-kicker">Medidas corporais</span>
+                <h2>Perímetros</h2>
+              </div>
+              <span class="metric-pill">cm</span>
+            </div>
+
+            <div class="mfield">
+              <label>Data</label>
+              <input type="date" id="metric-body-date" />
+            </div>
+            <div class="metric-grid">
+              <div class="mfield">
+                <label>Panturrilha</label>
+                <input type="number" id="metric-body-calf" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Coxa</label>
+                <input type="number" id="metric-body-thigh" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Glúteo</label>
+                <input type="number" id="metric-body-glute" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Cintura</label>
+                <input type="number" id="metric-body-waist" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Tórax</label>
+                <input type="number" id="metric-body-chest" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Bíceps</label>
+                <input type="number" id="metric-body-biceps" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Antebraço</label>
+                <input type="number" id="metric-body-forearm" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Pescoço</label>
+                <input type="number" id="metric-body-neck" min="0" step="any" />
+              </div>
+            </div>
+            <button class="btn btn-blue" onclick="saveMetricRecord('body')">
+              Salvar medidas
+            </button>
+            <div id="metric-body-compare"></div>
+            <div id="metric-body-old"></div>
+          </div>
+
+          <div class="metric-panel">
+            <div class="metric-panel-head">
+              <div>
+                <span class="metric-kicker">Composição corporal</span>
+                <h2>Bioimpedância</h2>
+              </div>
+              <span class="metric-pill">kg / %</span>
+            </div>
+
+            <div class="mfield">
+              <label>Data</label>
+              <input type="date" id="metric-composition-date" />
+            </div>
+            <div class="metric-grid">
+              <div class="mfield">
+                <label>Peso</label>
+                <input type="number" id="metric-composition-weight" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Massa magra</label>
+                <input type="number" id="metric-composition-lean" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Massa gorda</label>
+                <input type="number" id="metric-composition-fat" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Água</label>
+                <input type="number" id="metric-composition-water" min="0" step="any" />
+              </div>
+              <div class="mfield">
+                <label>Massa muscular</label>
+                <input type="number" id="metric-composition-muscle" min="0" step="any" />
+              </div>
+            </div>
+            <button class="btn btn-green" onclick="saveMetricRecord('composition')">
+              Salvar composição
+            </button>
+            <div id="metric-composition-compare"></div>
+            <div id="metric-composition-old"></div>
+          </div>
+          </div>
+        </div>
+      </div>
+
       <!-- MODAL EXAME -->
 
       <div class="moverlay" id="m-exam" onclick="mOvClose(event, 'm-exam')">
@@ -994,6 +1149,7 @@
     </div>
     <!-- /app-shell -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
     <script src="app.js"></script>
