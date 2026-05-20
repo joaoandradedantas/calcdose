@@ -1093,6 +1093,27 @@ body::before {
   font-weight: 800;
   white-space: nowrap;
 }
+.metric-history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+.metric-history-actions button {
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  background: var(--warn-dim);
+  color: var(--warn);
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.28rem 0.5rem;
+  white-space: nowrap;
+}
+.metric-history-actions button:hover {
+  border-color: var(--warn);
+}
 .metric-history-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2376,6 +2397,14 @@ select option {
   }
   .metric-compare-card em {
     justify-self: start;
+  }
+  .metric-history-card summary {
+    align-items: flex-start;
+  }
+  .metric-history-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
   }
   .metric-row {
     grid-template-columns: minmax(76px, 1fr) 62px 62px 54px;

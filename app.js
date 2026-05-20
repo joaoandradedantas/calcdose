@@ -1104,13 +1104,14 @@ function renderMetricChart() {
 
 function renderMetricHistory(type) {
   var cfg = metricConfig[type];
-  var recs = metricRecords(type).slice(2, 7);
+  var recs = metricRecords(type);
   var total = metricRecords(type).length;
   if (!recs.length) return "";
-  var html = '<details class="metric-history"><summary>Ver histórico completo (' + total + ")</summary>";
-  recs.forEach(function (rec) {
+  var html = '<details class="metric-history"><summary>Ver hist&oacute;rico completo (' + total + ")</summary>";
+  recs.forEach(function (rec, index) {
     var filled = cfg.fields.filter(function (field) { return rec.values && rec.values[field.key] !== undefined && rec.values[field.key] !== ""; });
-    html += '<details class="metric-history-card"><summary><div><strong>' + fd(rec.date) + "</strong><span>" + filled.length + ' métricas registradas</span></div><em>Ver detalhes</em></summary><div class="metric-history-grid">';
+    var badge = index === 0 ? "Atual" : index === 1 ? "Anterior" : "Hist&oacute;rico";
+    html += '<details class="metric-history-card"><summary><div><strong>' + fd(rec.date) + "</strong><span>" + filled.length + ' m&eacute;tricas registradas &bull; ' + badge + '</span></div><div class="metric-history-actions"><em>Ver detalhes</em><button type="button" onclick="deleteMetricRecord(\'' + type + "', '" + rec.id + "', event)\">Excluir</button></div></summary><div class=\"metric-history-grid\">";
     filled.forEach(function (field) {
       html += '<div><span>' + field.label + "</span><strong>" + metricValue(rec.values[field.key], field.unit) + "</strong></div>";
     });
@@ -1118,6 +1119,24 @@ function renderMetricHistory(type) {
   });
   html += "</details>";
   return html;
+}
+
+function deleteMetricRecord(type, id, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (!metricsData[type]) return;
+  var rec = metricsData[type].find(function (item) {
+    return item.id === id;
+  });
+  if (!rec) return;
+  if (!confirm("Excluir o registro de " + fd(rec.date) + "?")) return;
+  metricsData[type] = metricsData[type].filter(function (item) {
+    return item.id !== id;
+  });
+  renderMetrics();
+  scheduleSave();
 }
 
 function saveMetricRecord(type) {
