@@ -574,12 +574,17 @@ var metricsData = {
 };
 var metricActiveTab = localStorage.getItem("calcdose_metric_tab") || "body";
 var metricBodyUnit = localStorage.getItem("calcdose_metric_body_unit") || "cm";
-var metricChartMode = localStorage.getItem("calcdose_metric_chart") || "weight";
+var metricChartMode = {
+  body: localStorage.getItem("calcdose_metric_chart_body") || "waist",
+  composition:
+    localStorage.getItem("calcdose_metric_chart_composition") ||
+    localStorage.getItem("calcdose_metric_chart") ||
+    "weight",
+};
 var metricFormOpen = {
   body: false,
   composition: false,
 };
-var metricChart = null;
 
 var metricConfig = {
   body: {
@@ -633,7 +638,7 @@ function sortRecs(recs) {
 
 function metricRecords(type) {
   if (!metricsData[type]) metricsData[type] = [];
-  metricsData[type] = sortRecs(metricsData[type]).slice(0, 7);
+  metricsData[type] = sortRecs(metricsData[type]);
   return metricsData[type];
 }
 
@@ -653,6 +658,10 @@ function metricDisplayUnit(field) {
   return field.unit === "cm" ? metricBodyUnit : field.unit;
 }
 
+function metricUnitSuffix(unit) {
+  return unit === "%" ? unit : " " + unit;
+}
+
 function metricDisplayNumber(v, unit) {
   var n = parseFloat(v);
   if (isNaN(n)) return null;
@@ -663,7 +672,7 @@ function metricValue(v, unit) {
   if (v === undefined || v === null || v === "") return "-";
   var n = unit === "cm" ? metricDisplayNumber(v, unit) : parseFloat(v);
   if (isNaN(n)) return "-";
-  return fmt(n, 1) + " " + (unit === "cm" ? metricBodyUnit : unit);
+  return fmt(n, 1) + metricUnitSuffix(unit === "cm" ? metricBodyUnit : unit);
 }
 
 function metricRawValue(type, field) {
@@ -906,6 +915,7 @@ function renderMetrics() {
 }
 
 function setMetricTab(type) {
+  destroyMetricChart();
   metricActiveTab = type === "composition" ? "composition" : "body";
   localStorage.setItem("calcdose_metric_tab", metricActiveTab);
   metricFormOpen.body = false;
@@ -927,8 +937,15 @@ function setMetricBodyUnit(unit) {
 }
 
 function setMetricChartMode(mode) {
-  metricChartMode = mode;
-  localStorage.setItem("calcdose_metric_chart", metricChartMode);
+  var options = metricChartOptions(metricActiveTab);
+  var valid = options.some(function (item) {
+    return item.key === mode;
+  });
+  metricChartMode[metricActiveTab] = valid ? mode : options[0].key;
+  localStorage.setItem(
+    "calcdose_metric_chart_" + metricActiveTab,
+    metricChartMode[metricActiveTab],
+  );
   renderMetrics();
 }
 
@@ -946,12 +963,17 @@ function fatPercent(rec) {
   return (fat / weight) * 100;
 }
 
+function metricDeltaText(diff, unit) {
+  if (diff === null || diff === undefined || isNaN(diff)) return "Sem anterior";
+  if (diff === 0) return "0" + metricUnitSuffix(unit);
+  return (diff < 0 ? "&darr; " : "&uarr; +") + fmt(diff, 1) + metricUnitSuffix(unit);
+}
+
 function metricSummaryItem(label, value, unit, diff, goodWhenDown) {
   var cls = "metric-flat";
-  var text = "-";
+  var text = metricDeltaText(diff, unit);
   if (diff !== null && diff !== undefined && !isNaN(diff)) {
     cls = diff === 0 ? "metric-flat" : goodWhenDown ? diff < 0 ? "metric-up" : "metric-down" : diff > 0 ? "metric-up" : "metric-down";
-    text = (diff > 0 ? "+" : "") + fmt(diff, 1) + unit;
   }
   return '<div class="metric-summary-item"><span>' + label + "</span><strong>" + value + '</strong><em class="' + cls + '">' + text + "</em></div>";
 }
@@ -959,23 +981,26 @@ function metricSummaryItem(label, value, unit, diff, goodWhenDown) {
 function renderMetricSummary() {
   var el = document.getElementById("metric-summary");
   if (!el) return;
-  var body = metricRecords("body");
-  var comp = metricRecords("composition");
-  var curComp = comp[0];
-  var prevComp = comp[1];
-  var curBody = body[0];
-  var prevBody = body[1];
+  var weightRecs = metricRecordsForField("composition", metricField("composition", "weight"));
+  var fatRecs = metricRecordsForField("composition", { key: "fatPercent", unit: "%" });
+  var waistRecs = metricRecordsForField("body", metricField("body", "waist"));
+  var curComp = weightRecs[0];
+  var prevComp = weightRecs[1];
+  var curFatComp = fatRecs[0];
+  var prevFatComp = fatRecs[1];
+  var curBody = waistRecs[0];
+  var prevBody = waistRecs[1];
   var curWeight = curComp && curComp.values ? curComp.values.weight : "";
   var prevWeight = prevComp && prevComp.values ? prevComp.values.weight : "";
-  var curFat = fatPercent(curComp);
-  var prevFat = fatPercent(prevComp);
+  var curFat = fatPercent(curFatComp);
+  var prevFat = fatPercent(prevFatComp);
   var curWaist = curBody && curBody.values ? curBody.values.waist : "";
   var prevWaist = prevBody && prevBody.values ? prevBody.values.waist : "";
   var waistDiff = curWaist !== "" && prevWaist !== "" ? metricDisplayNumber(curWaist - prevWaist, "cm") : null;
-  var html = '<div class="metric-summary-head"><span>Acompanhamento corporal</span><strong>Hoje</strong></div><div class="metric-summary-grid">';
-  html += metricSummaryItem("Peso", curWeight === "" ? "-" : metricValue(curWeight, "kg"), "kg", curWeight !== "" && prevWeight !== "" ? curWeight - prevWeight : null, true);
-  html += metricSummaryItem("% Gordura", curFat === null ? "-" : fmt(curFat, 1) + "%", "%", curFat !== null && prevFat !== null ? curFat - prevFat : null, true);
-  html += metricSummaryItem("Cintura", curWaist === "" ? "-" : metricValue(curWaist, "cm"), metricBodyUnit, waistDiff, true);
+  var html = '<div class="metric-summary-head"><span>Acompanhamento corporal</span><strong>&Uacute;ltimos dados</strong></div><div class="metric-summary-grid">';
+  html += metricSummaryItem("Peso atual", curWeight === "" ? "-" : metricValue(curWeight, "kg"), "kg", curWeight !== "" && prevWeight !== "" ? curWeight - prevWeight : null, true);
+  html += metricSummaryItem("Gordura atual", curFat === null ? "-" : fmt(curFat, 1) + "%", "%", curFat !== null && prevFat !== null ? curFat - prevFat : null, true);
+  html += metricSummaryItem("Cintura atual", curWaist === "" ? "-" : metricValue(curWaist, "cm"), metricBodyUnit, waistDiff, true);
   html += "</div>";
   el.innerHTML = html;
 }
@@ -984,6 +1009,7 @@ function renderMetricActiveArea() {
   var root = document.getElementById("metric-active-content");
   var cfg = metricConfig[metricActiveTab];
   if (!root || !cfg) return;
+  destroyMetricChart();
   var html = '<section class="metric-panel metric-area">';
   html += '<div class="metric-panel-head"><div><span class="metric-kicker">' + cfg.title + "</span><h2>" + cfg.shortTitle + "</h2></div>";
   html += '<div class="metric-unit-group">';
@@ -994,10 +1020,10 @@ function renderMetricActiveArea() {
     html += "<span>kg / %</span>";
   }
   html += "</div></div>";
-  html += '<button class="metric-add-btn" onclick="toggleMetricForm(\'' + metricActiveTab + '\')">' + (metricFormOpen[metricActiveTab] ? "Fechar registro" : "+ Registrar nova medição") + "</button>";
-  if (metricFormOpen[metricActiveTab]) html += metricFormHtml(metricActiveTab);
   html += renderMetricCompare(metricActiveTab);
-  html += renderMetricChartPanel();
+  html += renderMetricChartPanel(metricActiveTab);
+  html += '<button class="metric-add-btn" onclick="toggleMetricForm(\'' + metricActiveTab + '\')">' + (metricFormOpen[metricActiveTab] ? "Fechar registro" : metricActiveTab === "body" ? "Registrar medidas" : "Registrar bioimped&acirc;ncia") + "</button>";
+  if (metricFormOpen[metricActiveTab]) html += metricFormHtml(metricActiveTab);
   html += renderMetricHistory(metricActiveTab);
   html += "</section>";
   root.innerHTML = html;
@@ -1017,88 +1043,132 @@ function metricFormHtml(type) {
 function metricDeltaClass(type, key, diff) {
   if (diff === 0 || isNaN(diff)) return "metric-flat";
   var goodUp = type === "composition" && (key === "lean" || key === "muscle");
-  var goodDown = key === "waist" || key === "fat";
+  var goodDown = key === "waist" || key === "fatPercent";
   if (!goodUp && !goodDown) return "metric-flat";
   return goodUp ? diff > 0 ? "metric-up" : "metric-down" : diff < 0 ? "metric-up" : "metric-down";
 }
 
+function metricField(type, key) {
+  return metricConfig[type].fields.find(function (field) {
+    return field.key === key;
+  });
+}
+
+function metricDisplayFields(type) {
+  if (type === "body") {
+    return ["waist", "calf", "thigh", "glute", "chest", "biceps", "forearm", "neck"].map(function (key) {
+      return metricField(type, key);
+    });
+  }
+  return [
+    metricField(type, "weight"),
+    metricField(type, "muscle"),
+    { key: "fatPercent", label: "% Gordura", unit: "%" },
+    metricField(type, "lean"),
+    metricField(type, "water"),
+  ];
+}
+
+function metricRecordNumber(rec, field) {
+  if (!rec || !field) return null;
+  if (field.key === "fatPercent") return fatPercent(rec);
+  var value = rec.values ? rec.values[field.key] : "";
+  return field.unit === "cm" ? metricDisplayNumber(value, field.unit) : parseFloat(value);
+}
+
+function metricRecordValue(rec, field) {
+  var value = metricRecordNumber(rec, field);
+  if (value === null || isNaN(value)) return "-";
+  return fmt(value, 1) + metricUnitSuffix(metricDisplayUnit(field));
+}
+
+function metricRecordsForField(type, field) {
+  return metricRecords(type).filter(function (rec) {
+    var value = metricRecordNumber(rec, field);
+    return value !== null && !isNaN(value);
+  });
+}
+
 function renderMetricCompare(type) {
-  var cfg = metricConfig[type];
   var recs = metricRecords(type);
   var current = recs[0];
-  var previous = recs[1];
   if (!current) return '<div class="metric-empty">Salve a primeira medição para iniciar o acompanhamento.</div>';
   var html = '<div class="metric-compare"><div class="metric-section-title"><span>Atual vs anterior</span><strong>' + fd(current.date) + "</strong></div>";
-  cfg.fields.forEach(function (field) {
-    var cur = current.values ? current.values[field.key] : "";
-    var prev = previous && previous.values ? previous.values[field.key] : "";
-    var curNum = field.unit === "cm" ? metricDisplayNumber(cur, field.unit) : parseFloat(cur);
-    var prevNum = field.unit === "cm" ? metricDisplayNumber(prev, field.unit) : parseFloat(prev);
-    var diff = !isNaN(curNum) && !isNaN(prevNum) ? curNum - prevNum : null;
-    var delta = diff === null ? "-" : (diff > 0 ? "+" : "") + fmt(diff, 1) + " " + metricDisplayUnit(field);
-    html += '<div class="metric-compare-card"><div><span>' + field.label + "</span><strong>" + metricValue(cur, field.unit) + " → " + (previous ? metricValue(prev, field.unit) : "-") + '</strong></div><em class="' + (diff === null ? "metric-flat" : metricDeltaClass(type, field.key, diff)) + '">' + delta + "</em></div>";
+  metricDisplayFields(type).forEach(function (field) {
+    var fieldRecs = metricRecordsForField(type, field);
+    var fieldCurrent = fieldRecs[0];
+    var fieldPrevious = fieldRecs[1];
+    var curNum = metricRecordNumber(fieldCurrent, field);
+    var prevNum = metricRecordNumber(fieldPrevious, field);
+    var diff = curNum !== null && prevNum !== null && !isNaN(curNum) && !isNaN(prevNum) ? curNum - prevNum : null;
+    html += '<div class="metric-compare-card"><div><span>' + field.label + "</span><strong>" + metricRecordValue(fieldCurrent, field) + '</strong><small>Anterior: ' + metricRecordValue(fieldPrevious, field) + '</small></div><em class="' + (diff === null ? "metric-flat" : metricDeltaClass(type, field.key, diff)) + '">' + metricDeltaText(diff, metricDisplayUnit(field)) + "</em></div>";
   });
   html += "</div>";
   return html;
 }
 
-function metricChartOptions() {
+function metricChartOptions(type) {
+  if (type === "body") {
+    return [
+      { key: "waist", label: "Cintura", field: metricField(type, "waist") },
+      { key: "calf", label: "Panturrilha", field: metricField(type, "calf") },
+      { key: "thigh", label: "Coxa", field: metricField(type, "thigh") },
+      { key: "glute", label: "Gl&uacute;teo", field: metricField(type, "glute") },
+      { key: "chest", label: "T&oacute;rax", field: metricField(type, "chest") },
+      { key: "biceps", label: "B&iacute;ceps", field: metricField(type, "biceps") },
+      { key: "forearm", label: "Antebra&ccedil;o", field: metricField(type, "forearm") },
+      { key: "neck", label: "Pesco&ccedil;o", field: metricField(type, "neck") },
+    ];
+  }
   return [
-    { key: "weight", label: "Peso", type: "composition", field: "weight" },
-    { key: "fatPercent", label: "% Gordura", type: "composition", field: "fatPercent" },
-    { key: "waist", label: "Cintura", type: "body", field: "waist" },
+    { key: "weight", label: "Peso", field: metricField(type, "weight") },
+    { key: "fatPercent", label: "% Gordura", field: { key: "fatPercent", unit: "%" } },
+    { key: "muscle", label: "Massa muscular", field: metricField(type, "muscle") },
+    { key: "lean", label: "Massa magra", field: metricField(type, "lean") },
+    { key: "water", label: "&Aacute;gua", field: metricField(type, "water") },
   ];
 }
 
-function renderMetricChartPanel() {
-  var html = '<div class="metric-chart-panel"><div class="metric-chart-tabs">';
-  metricChartOptions().forEach(function (opt) {
-    html += '<button class="' + (metricChartMode === opt.key ? "active" : "") + '" onclick="setMetricChartMode(\'' + opt.key + "')\">" + opt.label + "</button>";
+function renderMetricChartPanel(type) {
+  var options = metricChartOptions(type);
+  var selected = options.some(function (opt) {
+    return opt.key === metricChartMode[type];
+  }) ? metricChartMode[type] : options[0].key;
+  metricChartMode[type] = selected;
+  var html = '<div class="metric-chart-panel"><div class="metric-chart-head"><span>Evolu&ccedil;&atilde;o</span><select class="metric-chart-select" aria-label="M&eacute;trica do gr&aacute;fico" onchange="setMetricChartMode(this.value)">';
+  options.forEach(function (opt) {
+    html += '<option value="' + opt.key + '"' + (selected === opt.key ? " selected" : "") + ">" + opt.label + "</option>";
   });
-  html += '</div><div class="metric-chart-wrap"><canvas id="metric-progress-chart"></canvas></div></div>';
+  html += '</select></div><div id="metric-progress-chart" class="metric-chart-wrap"></div></div>';
   return html;
 }
 
-function metricChartData() {
-  var opt = metricChartOptions().find(function (item) { return item.key === metricChartMode; }) || metricChartOptions()[0];
-  return metricRecords(opt.type).slice().reverse().map(function (rec) {
-    var value = null;
-    if (opt.field === "fatPercent") value = fatPercent(rec);
-    else if (rec.values) value = opt.field === "waist" ? metricDisplayNumber(rec.values[opt.field], "cm") : parseFloat(rec.values[opt.field]);
-    return { date: fd(rec.date), value: value };
+function metricChartData(type) {
+  var options = metricChartOptions(type);
+  var opt = options.find(function (item) { return item.key === metricChartMode[type]; }) || options[0];
+  return metricRecords(type).slice(0, 7).reverse().map(function (rec) {
+    return { date: rec.date, value: metricRecordNumber(rec, opt.field) };
   }).filter(function (item) {
     return item.value !== null && !isNaN(item.value);
   });
 }
 
+function destroyMetricChart() {
+  var chartRoot = document.getElementById("metric-progress-chart");
+  if (chartRoot) chartRoot.innerHTML = "";
+}
+
 function renderMetricChart() {
-  var canvas = document.getElementById("metric-progress-chart");
-  if (!canvas || typeof Chart === "undefined") return;
-  var data = metricChartData();
-  if (metricChart) {
-    metricChart.destroy();
-    metricChart = null;
-  }
+  var chartRoot = document.getElementById("metric-progress-chart");
+  if (!chartRoot) return;
+  var data = metricChartData(metricActiveTab);
+  destroyMetricChart();
   if (data.length < 2) {
-    canvas.parentElement.innerHTML = '<div class="metric-empty metric-chart-empty">O gráfico aparece após dois registros da métrica selecionada.</div>';
+    chartRoot.innerHTML = '<div class="metric-empty metric-chart-empty">O gráfico aparece após dois registros da métrica selecionada.</div>';
     return;
   }
-  var styles = getComputedStyle(document.documentElement);
-  metricChart = new Chart(canvas, {
-    type: "line",
-    data: {
-      labels: data.map(function (item) { return item.date; }),
-      datasets: [{ data: data.map(function (item) { return item.value; }), borderColor: styles.getPropertyValue("--blue").trim(), backgroundColor: styles.getPropertyValue("--blue-dim").trim(), pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, tension: 0.35, fill: false }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { displayColors: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: styles.getPropertyValue("--text-muted").trim(), maxRotation: 0 } },
-        y: { grid: { color: "rgba(148, 163, 184, 0.22)" }, ticks: { color: styles.getPropertyValue("--text-muted").trim() } },
-      },
-    },
+  chartRoot.innerHTML = lineHistoryChart(data, function (value) {
+    return fmt(value, 1);
   });
 }
 
@@ -1110,10 +1180,13 @@ function renderMetricHistory(type) {
   var html = '<details class="metric-history"><summary>Ver hist&oacute;rico completo (' + total + ")</summary>";
   recs.forEach(function (rec, index) {
     var filled = cfg.fields.filter(function (field) { return rec.values && rec.values[field.key] !== undefined && rec.values[field.key] !== ""; });
+    var historyFields = type === "composition" ? metricDisplayFields(type).concat([metricField(type, "fat")]) : metricDisplayFields(type);
     var badge = index === 0 ? "Atual" : index === 1 ? "Anterior" : "Hist&oacute;rico";
     html += '<details class="metric-history-card"><summary><div><strong>' + fd(rec.date) + "</strong><span>" + filled.length + ' m&eacute;tricas registradas &bull; ' + badge + '</span></div><div class="metric-history-actions"><em>Ver detalhes</em><button type="button" onclick="deleteMetricRecord(\'' + type + "', '" + rec.id + "', event)\">Excluir</button></div></summary><div class=\"metric-history-grid\">";
-    filled.forEach(function (field) {
-      html += '<div><span>' + field.label + "</span><strong>" + metricValue(rec.values[field.key], field.unit) + "</strong></div>";
+    historyFields.forEach(function (field) {
+      var value = metricRecordNumber(rec, field);
+      if (value === null || isNaN(value)) return;
+      html += '<div><span>' + field.label + "</span><strong>" + metricRecordValue(rec, field) + "</strong></div>";
     });
     html += "</div></details>";
   });
@@ -1172,7 +1245,7 @@ function saveMetricRecord(type) {
     createdAt: new Date().toISOString(),
   });
 
-  metricsData[type] = sortRecs(metricsData[type]).slice(0, 7);
+  metricsData[type] = sortRecs(metricsData[type]);
   metricFormOpen[type] = false;
   clearMetricInputs(type);
   renderMetrics();
@@ -1182,22 +1255,7 @@ function saveMetricRecord(type) {
 /* ════════════════════════════════════════
       RENDER EXAMES
       ════════════════════════════════════════ */
-function historyChart(recs) {
-  if (!recs || recs.length < 2) return "";
-
-  var vals = recs
-    .slice()
-    .reverse()
-    .map(function (r) {
-      return {
-        value: parseFloat(String(r.result).replace(",", ".")),
-        date: r.date,
-      };
-    })
-    .filter(function (v) {
-      return !isNaN(v.value);
-    });
-
+function lineHistoryChart(vals, valueFormatter) {
   if (vals.length < 2) return "";
 
   var w = 320;
@@ -1244,7 +1302,7 @@ function historyChart(recs) {
                     <circle cx="${p.x}" cy="${p.y}" r="4" class="hchart-dot"></circle>
 
                     <text x="${p.x}" y="${p.y - 10}" class="hchart-value">
-                    ${p.value}
+                    ${valueFormatter ? valueFormatter(p.value) : p.value}
                     </text>
 
                     <text x="${p.x}" y="${h - 6}" class="hchart-date">
@@ -1258,6 +1316,25 @@ function historyChart(recs) {
         `;
 
   return svg;
+}
+
+function historyChart(recs) {
+  if (!recs || recs.length < 2) return "";
+
+  var vals = recs
+    .slice()
+    .reverse()
+    .map(function (r) {
+      return {
+        value: parseFloat(String(r.result).replace(",", ".")),
+        date: r.date,
+      };
+    })
+    .filter(function (v) {
+      return !isNaN(v.value);
+    });
+
+  return lineHistoryChart(vals);
 }
 function sparkline(values) {
   if (!values || values.length < 2) return "";

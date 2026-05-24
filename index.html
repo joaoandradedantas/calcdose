@@ -872,40 +872,40 @@
 
             <div class="mfield">
               <label>Data</label>
-              <input type="date" id="metric-body-date" />
+              <input type="date" id="legacy-metric-body-date" />
             </div>
             <div class="metric-grid">
               <div class="mfield">
                 <label>Panturrilha</label>
-                <input type="number" id="metric-body-calf" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-calf" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Coxa</label>
-                <input type="number" id="metric-body-thigh" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-thigh" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Glúteo</label>
-                <input type="number" id="metric-body-glute" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-glute" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Cintura</label>
-                <input type="number" id="metric-body-waist" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-waist" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Tórax</label>
-                <input type="number" id="metric-body-chest" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-chest" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Bíceps</label>
-                <input type="number" id="metric-body-biceps" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-biceps" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Antebraço</label>
-                <input type="number" id="metric-body-forearm" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-forearm" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Pescoço</label>
-                <input type="number" id="metric-body-neck" min="0" step="any" />
+                <input type="number" id="legacy-metric-body-neck" min="0" step="any" />
               </div>
             </div>
             <button class="btn btn-blue" onclick="saveMetricRecord('body')">
@@ -926,28 +926,28 @@
 
             <div class="mfield">
               <label>Data</label>
-              <input type="date" id="metric-composition-date" />
+              <input type="date" id="legacy-metric-composition-date" />
             </div>
             <div class="metric-grid">
               <div class="mfield">
                 <label>Peso</label>
-                <input type="number" id="metric-composition-weight" min="0" step="any" />
+                <input type="number" id="legacy-metric-composition-weight" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Massa magra</label>
-                <input type="number" id="metric-composition-lean" min="0" step="any" />
+                <input type="number" id="legacy-metric-composition-lean" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Massa gorda</label>
-                <input type="number" id="metric-composition-fat" min="0" step="any" />
+                <input type="number" id="legacy-metric-composition-fat" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Água</label>
-                <input type="number" id="metric-composition-water" min="0" step="any" />
+                <input type="number" id="legacy-metric-composition-water" min="0" step="any" />
               </div>
               <div class="mfield">
                 <label>Massa muscular</label>
-                <input type="number" id="metric-composition-muscle" min="0" step="any" />
+                <input type="number" id="legacy-metric-composition-muscle" min="0" step="any" />
               </div>
             </div>
             <button class="btn btn-green" onclick="saveMetricRecord('composition')">
@@ -1149,7 +1149,6 @@
     </div>
     <!-- /app-shell -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
     <script src="app.js"></script>
