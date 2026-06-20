@@ -1430,21 +1430,6 @@ function renderExams() {
       h += '<span class="ename">' + esc(en) + "</span>";
 
       if (lat) {
-        // Trend chip
-        var trend = "";
-        if (recs.length >= 2) {
-          var cur = parseFloat(lat.result),
-            prv = parseFloat(recs[1].result);
-          if (!isNaN(cur) && !isNaN(prv) && prv !== 0) {
-            var diff = cur - prv,
-              pct = Math.abs((diff / prv) * 100).toFixed(0);
-            if (diff > 0)
-              trend = '<span class="etrend t-up">↑ ' + pct + "%</span>";
-            else if (diff < 0)
-              trend = '<span class="etrend t-down">↓ ' + pct + "%</span>";
-            else trend = '<span class="etrend t-flat">→</span>';
-          }
-        }
         h += '<div class="echip">';
         h +=
           '<span class="echip-val">' +
@@ -1460,7 +1445,6 @@ function renderExams() {
           (lat.date ? fd(lat.date) : "") +
           "</span>";
         h += "</div>";
-        if (trend) h += trend;
       } else {
         h += '<span class="ebadge">Sem registro</span>';
       }
@@ -1479,6 +1463,12 @@ function renderExams() {
           "','" +
           esc(en) +
           '\')" title="Remover último"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>';
+      h +=
+        '<button class="icobtn del" onclick="delExam(\'' +
+        sec.id +
+        "','" +
+        esc(en) +
+        '\')" title="Excluir exame"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
       h += "</div></div>"; // erow
 
       // History (expandable) — only if has records
@@ -1507,8 +1497,9 @@ function renderExams() {
             "</strong></div>";
         h += '<div class="ehist-title">Histórico completo</div>';
         h += historyChart(recentRecs);
-        recentRecs.forEach(function (r, i) {
+        recentRecs.forEach(function (r) {
           var delta = "";
+          var i = recs.length;
           if (i < recs.length - 1) {
             var c2 = parseFloat(r.result),
               p2 = parseFloat(recs[i + 1].result);
@@ -1531,7 +1522,7 @@ function renderExams() {
             esc(r.result) +
             (r.unit ? " " + esc(r.unit) : "") +
             "</div>";
-          h += delta + "</div>";
+          h += "</div>";
           if (r.notes) h += '<div class="hnotes">' + esc(r.notes) + "</div>";
         });
         if (olderRecs.length > 0) {
@@ -1670,6 +1661,31 @@ function delRec(sid, en) {
 /* ════════════════════════════════════════
       SECTION
       ════════════════════════════════════════ */
+function delExam(sid, en) {
+  var sec = examData.find(function (s) {
+    return s.id === sid;
+  });
+  if (!sec) return;
+  var hasRecords = getRecs(sid, en).length > 0;
+  var msg =
+    'Excluir o exame "' +
+    en +
+    '" da seção "' +
+    sec.name +
+    '"' +
+    (hasRecords ? " e remover todos os registros dele?" : "?");
+  if (!confirm(msg)) return;
+  sec.exams = (sec.exams || []).filter(function (examName) {
+    return examName !== en;
+  });
+  if (records[sid]) {
+    delete records[sid][en];
+  }
+  openSecs[sid] = true;
+  renderExams();
+  scheduleSave();
+}
+
 function openAddExM(sid) {
   document.getElementById("m-addsec").value = sid;
   document.getElementById("m-addname").value = "";
