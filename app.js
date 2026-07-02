@@ -1382,10 +1382,6 @@ function renderExams() {
 
   examData.forEach(function (sec) {
     var isOpen = openSecs[sec.id];
-    var totalRec = 0;
-    (sec.exams || []).forEach(function (en) {
-      totalRec += getRecs(sec.id, en).length;
-    });
 
     var h = '<div class="escard" id="ec-' + sec.id + '">';
     // Section header
@@ -1404,7 +1400,6 @@ function renderExams() {
       sec.color +
       '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>';
     h += '<span class="esname">' + esc(sec.name) + "</span>";
-    if (totalRec > 0) h += '<span class="escnt">' + totalRec + "</span>";
     h +=
       '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
     h += "</div>";
@@ -1463,16 +1458,13 @@ function renderExams() {
           "','" +
           esc(en) +
           '\')" title="Remover último"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>';
-      h +=
-        '<button class="icobtn del" onclick="delExam(\'' +
-        sec.id +
-        "','" +
-        esc(en) +
-        '\')" title="Excluir exame"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+      if (count === 0)
+        h +=
+          '<button class="icobtn del" disabled title="Sem registro para remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
       h += "</div></div>"; // erow
 
       // History (expandable) — only if has records
-      if (count > 0) {
+      if (true) {
         h +=
           '<button class="hist-toggle" id="htbtn-' +
           bid +
@@ -1525,6 +1517,12 @@ function renderExams() {
           h += "</div>";
           if (r.notes) h += '<div class="hnotes">' + esc(r.notes) + "</div>";
         });
+        h +=
+          '<button class="delete-exam-btn" onclick="delExam(\'' +
+          sec.id +
+          "','" +
+          esc(en) +
+          '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Excluir exame</span></button>';
         if (olderRecs.length > 0) {
           h +=
             '<button class="older-hist-btn" onclick="openOlderHist(\'' +

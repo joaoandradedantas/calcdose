@@ -1900,31 +1900,36 @@ select option {
 /* Exam item: compact header row */
 .erow {
   display: flex;
-  align-items: center;
-  gap: 0.625rem;
+  align-items: flex-start;
+  gap: 0.5rem;
   padding: 0.75rem 0.875rem;
 }
 .ename {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 /* Latest value chip */
 .echip {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  flex-shrink: 0;
-  min-width: 0;
+  flex: 0 1 92px;
+  min-width: 64px;
+  max-width: 100px;
 }
 .echip-val {
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--text);
-  line-height: 1;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 .echip-meta {
   font-size: 0.6875rem;
@@ -2036,6 +2041,7 @@ select option {
   display: flex;
   gap: 0.3rem;
   flex-shrink: 0;
+  width: 60px;
 }
 .icobtn {
   width: 28px;
@@ -2059,6 +2065,24 @@ select option {
   border-color: var(--warn);
   color: var(--warn);
   background: var(--warn-dim);
+}
+.icobtn:disabled,
+.icobtn:disabled:hover {
+  opacity: 0.36;
+  cursor: not-allowed;
+  border-color: var(--border2);
+  color: var(--text-muted);
+  background: transparent;
+}
+.icobtn.del svg {
+  display: none;
+}
+.icobtn.del::before {
+  content: "×";
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
 }
 .icobtn svg {
   width: 12px;
@@ -2145,6 +2169,32 @@ select option {
   padding-left: 1rem;
   font-style: italic;
   margin-top: 0.15rem;
+}
+
+.delete-exam-btn {
+  width: 100%;
+  border: 1px solid rgba(194, 65, 12, 0.24);
+  border-radius: var(--r-md);
+  background: var(--warn-dim);
+  color: var(--warn);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+.delete-exam-btn:hover {
+  border-color: var(--warn);
+}
+.delete-exam-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .older-hist-btn {
