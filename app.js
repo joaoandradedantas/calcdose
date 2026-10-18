@@ -1338,7 +1338,7 @@ function historyChart(recs) {
 }
 
 /* Resumos de exames são montados em memória e nunca entram em records/scheduleSave. */
-var examSummaryFiles = [];
+var examSummaryFile = null;
 
 function openExamSummary() {
   var options = document.getElementById("exam-summary-options");
@@ -1360,84 +1360,123 @@ function openExamSummary() {
   document.getElementById("m-exam-summary").classList.add("show");
 }
 
-function drawExamSummary(exam) {
-  var recs = sortRecs(getRecs(exam.sid, exam.name));
-  var canvas = document.createElement("canvas");
-  canvas.width = 1000;
-  canvas.height = 900;
-  var ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#f7f9fc";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(40, 40, 920, 820);
-  ctx.strokeStyle = "#e2e8f0";
-  ctx.strokeRect(40, 40, 920, 820);
-  ctx.fillStyle = "#16a36a";
-  ctx.fillRect(40, 40, 10, 820);
-  ctx.textBaseline = "top";
-  ctx.fillStyle = "#182230";
-  ctx.font = "700 34px system-ui, sans-serif";
-  ctx.fillText(exam.name, 80, 72, 830);
-  ctx.fillStyle = "#667085";
-  ctx.font = "18px system-ui, sans-serif";
-  ctx.fillText(exam.section + " · Histórico completo: " + recs.length + " resultados", 80, 120, 830);
-  ctx.fillStyle = "#182230";
-  ctx.font = "700 20px system-ui, sans-serif";
-  ctx.fillText("Evolução", 80, 170);
-
-  var values = recs.slice().reverse().map(function (rec) {
-    return { value: parseFloat(String(rec.result).replace(",", ".")), date: rec.date, unit: rec.unit };
-  }).filter(function (rec) { return Number.isFinite(rec.value); });
-  var chart = { x: 100, y: 220, w: 800, h: 260 };
-  ctx.strokeStyle = "#e8edf3";
-  ctx.lineWidth = 1;
-  for (var grid = 0; grid < 4; grid++) {
-    var gy = chart.y + (chart.h * grid) / 3;
-    ctx.beginPath(); ctx.moveTo(chart.x, gy); ctx.lineTo(chart.x + chart.w, gy); ctx.stroke();
-  }
-  if (values.length) {
-    var min = Math.min.apply(null, values.map(function (v) { return v.value; }));
-    var max = Math.max.apply(null, values.map(function (v) { return v.value; }));
-    if (min === max) { min -= 1; max += 1; }
-    var pts = values.map(function (v, i) { return {
-      x: chart.x + (values.length === 1 ? chart.w / 2 : i * chart.w / (values.length - 1)),
-      y: chart.y + chart.h - ((v.value - min) / (max - min)) * chart.h,
-    }; });
-    ctx.beginPath();
-    pts.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
-    ctx.strokeStyle = "#18a56b"; ctx.lineWidth = 4; ctx.stroke();
-    pts.forEach(function (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fillStyle = "#18a56b"; ctx.fill(); });
-    var tickCount = Math.min(6, values.length);
-    ctx.fillStyle = "#667085"; ctx.font = "15px system-ui, sans-serif";
-    for (var t = 0; t < tickCount; t++) {
-      var vi = Math.round(t * (values.length - 1) / Math.max(1, tickCount - 1));
-      var tx = pts[vi].x;
-      ctx.textAlign = t === 0 ? "left" : (t === tickCount - 1 ? "right" : "center");
-      ctx.fillText(fd(values[vi].date), tx, chart.y + chart.h + 15);
+function pdfHexText(value) {
+  var text = String(value == null ? "" : value).replace(/[—–]/g, "-").replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  var out = "";
+  for (var i = 0; i < text.length; i++) {
+    var code = text.charCodeAt(i);
+    if (code > 255) {
+      var normalized = text.charAt(i).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      code = normalized.length && normalized.charCodeAt(0) <= 255 ? normalized.charCodeAt(0) : 63;
     }
-    ctx.textAlign = "left";
-  } else {
-    ctx.fillStyle = "#667085"; ctx.font = "18px system-ui, sans-serif";
-    ctx.fillText("Não há resultados numéricos para montar o gráfico.", chart.x, chart.y + 100);
+    out += code.toString(16).padStart(2, "0");
   }
-  ctx.fillStyle = "#182230";
-  ctx.font = "700 20px system-ui, sans-serif";
-  ctx.fillText("Últimos 4 resultados", 80, 535);
-  var recent = recs.slice(0, 4);
-  recent.forEach(function (rec, index) {
-    var y = 580 + index * 62;
-    ctx.fillStyle = index % 2 ? "#f7f9fc" : "#ffffff";
-    ctx.fillRect(80, y - 6, 830, 52);
-    ctx.fillStyle = "#344054"; ctx.font = "17px system-ui, sans-serif";
-    ctx.fillText(fd(rec.date) || "—", 96, y + 8);
-    ctx.fillStyle = "#182230"; ctx.font = "700 18px system-ui, sans-serif";
-    ctx.fillText(String(rec.result) + (rec.unit ? " " + rec.unit : ""), 300, y + 7, 590);
+  return "<" + out + ">";
+}
+
+function buildExamSummaryPdf(exams) {
+  var pageWidth = 842, pageHeight = 595, chartX = 82, chartW = 690, chartY = 185, chartH = 190;
+  var pages = [];
+  exams.forEach(function (exam) {
+    var recs = sortRecs(getRecs(exam.sid, exam.name));
+    var values = recs.slice().reverse().map(function (rec) {
+      return { value: parseFloat(String(rec.result).replace(",", ".")), date: rec.date, unit: rec.unit };
+    }).filter(function (rec) { return Number.isFinite(rec.value); });
+    var chunks = [];
+    for (var start = 0; start < values.length; start += 20) chunks.push(values.slice(start, start + 20));
+    if (!chunks.length) chunks.push([]);
+
+    chunks.forEach(function (chunk, chunkIndex) {
+      var ops = [];
+      function text(x, yTop, size, value, bold, color) {
+        var y = pageHeight - yTop;
+        ops.push("BT " + (color || "0.12 0.17 0.23") + " rg /F" + (bold ? "2" : "1") + " " + size + " Tf 1 0 0 1 " + x + " " + y + " Tm " + pdfHexText(value) + " Tj ET");
+      }
+      function line(x1, y1, x2, y2, color, width) {
+        ops.push((color || "0.88 0.91 0.94") + " RG " + (width || 1) + " w " + x1 + " " + (pageHeight - y1) + " m " + x2 + " " + (pageHeight - y2) + " l S");
+      }
+      text(48, 50, 21, exam.name, true);
+      text(48, 75, 10, exam.section + "  |  " + recs.length + " registros no histórico", false, "0.38 0.43 0.50");
+      var rangeText = values.length ? "Pontos " + (chunkIndex * 20 + 1) + "–" + (chunkIndex * 20 + chunk.length) + " de " + values.length : "Sem resultados numéricos para o gráfico";
+      text(48, 125, 12, "Evolução numérica" + (chunks.length > 1 ? " (continuação " + (chunkIndex + 1) + "/" + chunks.length + ")" : ""), true);
+      text(48, 145, 9, rangeText, false, "0.38 0.43 0.50");
+
+      for (var grid = 0; grid < 4; grid++) {
+        var gy = chartY + (chartH * grid) / 3;
+        line(chartX, gy, chartX + chartW, gy, "0.90 0.92 0.95", 0.7);
+      }
+      if (chunk.length) {
+        var min = Math.min.apply(null, chunk.map(function (v) { return v.value; }));
+        var max = Math.max.apply(null, chunk.map(function (v) { return v.value; }));
+        if (min === max) { min -= Math.abs(min * 0.05) || 1; max += Math.abs(max * 0.05) || 1; }
+        var points = chunk.map(function (v, i) { return {
+          x: chartX + (chunk.length === 1 ? chartW / 2 : i * chartW / (chunk.length - 1)),
+          y: chartY + chartH - ((v.value - min) / (max - min)) * chartH,
+          value: v.value, date: v.date, unit: v.unit,
+        }; });
+        for (var p = 1; p < points.length; p++) line(points[p - 1].x, points[p - 1].y, points[p].x, points[p].y, "0.09 0.62 0.40", 2.5);
+        points.forEach(function (point, pointIndex) {
+          var py = pageHeight - point.y;
+          var radius = 3.2, curve = radius * 0.5523;
+          ops.push("0.09 0.62 0.40 rg " + (point.x + radius) + " " + py + " m " + (point.x + radius) + " " + (py + curve) + " " + (point.x + curve) + " " + (py + radius) + " " + point.x + " " + (py + radius) + " c " + (point.x - curve) + " " + (py + radius) + " " + (point.x - radius) + " " + (py + curve) + " " + (point.x - radius) + " " + py + " c " + (point.x - radius) + " " + (py - curve) + " " + (point.x - curve) + " " + (py - radius) + " " + point.x + " " + (py - radius) + " c " + (point.x + curve) + " " + (py - radius) + " " + (point.x + radius) + " " + (py - curve) + " " + (point.x + radius) + " " + py + " c f");
+          var label = String(chunk[pointIndex].value) + (point.unit ? " " + point.unit : "");
+          text(point.x - 15, point.y - (pointIndex % 2 ? 12 : 23), 8, label, true, "0.12 0.17 0.23");
+        });
+        var tickCount = Math.min(5, points.length);
+        for (var tick = 0; tick < tickCount; tick++) {
+          var tickIndex = Math.round(tick * (points.length - 1) / Math.max(1, tickCount - 1));
+          var tickX = points[tickIndex].x;
+          text(tickX - 16, chartY + chartH + 17, 8, fd(points[tickIndex].date), false, "0.38 0.43 0.50");
+        }
+      }
+
+      if (chunkIndex === 0) {
+        text(48, 425, 12, "Últimos 4 registros", true);
+        text(55, 446, 8, "DATA", true, "0.38 0.43 0.50");
+        text(185, 446, 8, "RESULTADO", true, "0.38 0.43 0.50");
+        text(345, 446, 8, "OBSERVAÇÕES", true, "0.38 0.43 0.50");
+        var recent = recs.slice(0, 4);
+        recent.forEach(function (rec, index) {
+          var y = 466 + index * 27;
+          line(50, y + 7, 790, y + 7, "0.91 0.93 0.95", 0.5);
+          text(55, y, 9, fd(rec.date) || "-", false);
+          text(185, y, 9, String(rec.result) + (rec.unit ? " " + rec.unit : ""), true);
+          text(345, y, 8, String(rec.notes || "").slice(0, 92), false, "0.38 0.43 0.50");
+        });
+      }
+      text(48, 582, 8, "CalcDose  |  Gerado em " + new Date().toLocaleDateString("pt-BR") + "  |  Página " + (pages.length + 1), false, "0.48 0.52 0.58");
+      pages.push(ops.join("\n"));
+    });
   });
-  ctx.fillStyle = "#667085"; ctx.font = "14px system-ui, sans-serif";
-  ctx.fillText("Gerado no CalcDose · " + new Date().toLocaleDateString("pt-BR"), 80, 825);
-  return new Promise(function (resolve, reject) {
-    canvas.toBlob(function (blob) { if (blob) resolve(blob); else reject(new Error("Não foi possível criar a imagem.")); }, "image/png");
+
+  var objects = [null];
+  function addObject(value) { objects.push(value); return objects.length - 1; }
+  var catalogId = addObject("");
+  var pagesId = addObject("");
+  var regularFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  var boldFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  var pageIds = [];
+  pages.forEach(function (content) {
+    var stream = content + "\n";
+    var contentId = addObject("<< /Length " + stream.length + " >>\nstream\n" + stream + "endstream");
+    var pageId = addObject("<< /Type /Page /Parent " + pagesId + " 0 R /MediaBox [0 0 " + pageWidth + " " + pageHeight + "] /Resources << /Font << /F1 " + regularFontId + " 0 R /F2 " + boldFontId + " 0 R >> >> /Contents " + contentId + " 0 R >>");
+    pageIds.push(pageId);
   });
+  objects[catalogId] = "<< /Type /Catalog /Pages " + pagesId + " 0 R >>";
+  objects[pagesId] = "<< /Type /Pages /Kids [" + pageIds.map(function (id) { return id + " 0 R"; }).join(" ") + "] /Count " + pageIds.length + " >>";
+  var pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
+  var offsets = [0];
+  for (var objectIndex = 1; objectIndex < objects.length; objectIndex++) {
+    offsets[objectIndex] = pdf.length;
+    pdf += objectIndex + " 0 obj\n" + objects[objectIndex] + "\nendobj\n";
+  }
+  var xrefOffset = pdf.length;
+  pdf += "xref\n0 " + objects.length + "\n0000000000 65535 f \n";
+  for (var offsetIndex = 1; offsetIndex < objects.length; offsetIndex++) pdf += String(offsets[offsetIndex]).padStart(10, "0") + " 00000 n \n";
+  pdf += "trailer\n<< /Size " + objects.length + " /Root " + catalogId + " 0 R >>\nstartxref\n" + xrefOffset + "\n%%EOF";
+  var bytes = new Uint8Array(pdf.length);
+  for (var byteIndex = 0; byteIndex < pdf.length; byteIndex++) bytes[byteIndex] = pdf.charCodeAt(byteIndex) & 255;
+  return new Blob([bytes], { type: "application/pdf" });
 }
 
 async function generateExamSummary() {
@@ -1447,39 +1486,32 @@ async function generateExamSummary() {
   button.disabled = true;
   button.textContent = "Gerando…";
   try {
-    examSummaryFiles = [];
-    for (var i = 0; i < selected.length; i++) {
-      var box = selected[i];
-      var blob = await drawExamSummary({ sid: box.dataset.sid, name: box.dataset.name, section: box.dataset.section });
-      var safeName = box.dataset.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "exame";
-      examSummaryFiles.push(new File([blob], "calcdose-" + safeName + ".png", { type: "image/png" }));
-    }
+    var exams = selected.map(function (box) { return { sid: box.dataset.sid, name: box.dataset.name, section: box.dataset.section }; });
+    var safeName = "calcdose-resumo-exames-" + new Date().toISOString().slice(0, 10) + ".pdf";
+    examSummaryFile = new File([buildExamSummaryPdf(exams)], safeName, { type: "application/pdf" });
     closeM("m-exam-summary");
     var status = document.getElementById("exam-summary-status");
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: examSummaryFiles })) {
-      await navigator.share({ files: examSummaryFiles, title: "Resumo de exames · CalcDose" });
-      status.textContent = "Resumo compartilhado. As imagens existem somente durante este envio.";
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [examSummaryFile] })) {
+      await navigator.share({ files: [examSummaryFile], title: "Resumo de exames · CalcDose" });
+      status.textContent = "PDF compartilhado. O resumo não foi salvo no histórico do app.";
     } else {
-      status.innerHTML = "Imagens prontas. Escolha uma para baixar e compartilhar pelo WhatsApp ou outro app: " + examSummaryFiles.map(function (file, index) {
-        return '<button class="summary-download" type="button" onclick="downloadExamSummary(' + index + ')">' + esc(file.name) + '</button>';
-      }).join("");
+      status.innerHTML = "PDF pronto. Baixe o arquivo para compartilhar pelo WhatsApp ou outro app: <button class=\"summary-download\" type=\"button\" onclick=\"downloadExamSummaryPdf()\">" + esc(examSummaryFile.name) + "</button>";
     }
   } catch (error) {
     if (error && error.name === "AbortError") return;
     alert("Não foi possível gerar ou compartilhar o resumo neste aparelho. " + (error.message || ""));
   } finally {
     button.disabled = false;
-    button.textContent = "Gerar resumo";
+    button.textContent = "Gerar PDF";
   }
 }
 
-function downloadExamSummary(index) {
-  var file = examSummaryFiles[index];
-  if (!file) return;
-  var url = URL.createObjectURL(file);
+function downloadExamSummaryPdf() {
+  if (!examSummaryFile) return;
+  var url = URL.createObjectURL(examSummaryFile);
   var link = document.createElement("a");
   link.href = url;
-  link.download = file.name;
+  link.download = examSummaryFile.name;
   link.click();
   setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }

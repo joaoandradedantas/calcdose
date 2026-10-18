@@ -811,7 +811,7 @@
             <div class="share-summary-copy">
               <span class="metric-kicker">Compartilhamento</span>
               <h2 id="share-summary-title">Resumo para compartilhar</h2>
-              <p>Selecione exames para gerar imagens com o histórico completo, gráfico de evolução e os quatro resultados mais recentes. O resumo não fica salvo no app.</p>
+              <p>Selecione exames para gerar um PDF com o gráfico de evolução e os quatro resultados mais recentes de cada exame. O resumo não fica salvo no app.</p>
             </div>
             <button class="btn btn-green" type="button" onclick="openExamSummary()">Selecionar exames</button>
             <div id="exam-summary-picker" class="exam-summary-picker" hidden></div>
@@ -842,11 +842,11 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <p class="summary-modal-intro">Cada exame selecionado gera uma imagem com todos os resultados do histórico. Os dados são processados neste aparelho.</p>
+          <p class="summary-modal-intro">Será criado um único PDF com o histórico numérico no gráfico e somente os quatro registros mais recentes de cada exame. Os dados são processados neste aparelho.</p>
           <div id="exam-summary-options" class="exam-summary-options"></div>
           <div class="mactions summary-modal-actions">
             <button class="btn btn-ghost" type="button" onclick="closeM('m-exam-summary')">Cancelar</button>
-            <button class="btn btn-green" id="exam-summary-generate" type="button" onclick="generateExamSummary()">Gerar resumo</button>
+            <button class="btn btn-green" id="exam-summary-generate" type="button" onclick="generateExamSummary()">Gerar PDF</button>
           </div>
         </div>
       </div>
