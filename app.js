@@ -152,9 +152,7 @@ async function createAccount() {
   }
 
   if (!data.session) {
-    alert(
-      "Conta criada! Confirme seu email antes de fazer login.",
-    );
+    alert("Conta criada! Confirme seu email antes de fazer login.");
     showOnly("setup");
     return;
   }
@@ -687,7 +685,11 @@ function metricRawValue(type, field) {
 function metricLastValue(type, key) {
   var recs = metricRecords(type);
   for (var i = 0; i < recs.length; i++) {
-    if (recs[i].values && recs[i].values[key] !== undefined && recs[i].values[key] !== "") {
+    if (
+      recs[i].values &&
+      recs[i].values[key] !== undefined &&
+      recs[i].values[key] !== ""
+    ) {
       return recs[i].values[key];
     }
   }
@@ -701,7 +703,8 @@ function updateMetricPlaceholders(type) {
     var el = document.getElementById(metricInputId(type, field.key));
     if (!el) return;
     var last = metricLastValue(type, field.key);
-    el.placeholder = last === "" ? "" : metricValue(last, field.unit) + " (último)";
+    el.placeholder =
+      last === "" ? "" : metricValue(last, field.unit) + " (último)";
   });
 }
 
@@ -839,10 +842,13 @@ function renderMetricArea(type) {
   } else {
     var html = '<div class="metric-compare">';
     html += '<div class="metric-compare-head">';
-    html += '<div><span>Atual</span><strong>' + fd(current.date) + "</strong></div>";
+    html +=
+      "<div><span>Atual</span><strong>" + fd(current.date) + "</strong></div>";
     html += previous
-      ? '<div><span>Anterior</span><strong>' + fd(previous.date) + "</strong></div>"
-      : '<div><span>Anterior</span><strong>-</strong></div>';
+      ? "<div><span>Anterior</span><strong>" +
+        fd(previous.date) +
+        "</strong></div>"
+      : "<div><span>Anterior</span><strong>-</strong></div>";
     html += "</div>";
 
     cfg.fields.forEach(function (field) {
@@ -854,7 +860,8 @@ function renderMetricArea(type) {
 
       if (!isNaN(curNum) && !isNaN(prevNum)) {
         var diff = curNum - prevNum;
-        var cls = diff > 0 ? "metric-up" : diff < 0 ? "metric-down" : "metric-flat";
+        var cls =
+          diff > 0 ? "metric-up" : diff < 0 ? "metric-down" : "metric-flat";
         delta =
           '<span class="metric-delta ' +
           cls +
@@ -868,7 +875,10 @@ function renderMetricArea(type) {
 
       html += '<div class="metric-row">';
       html += '<span class="metric-label">' + field.label + "</span>";
-      html += '<span class="metric-current">' + metricValue(cur, field.unit) + "</span>";
+      html +=
+        '<span class="metric-current">' +
+        metricValue(cur, field.unit) +
+        "</span>";
       html +=
         '<span class="metric-previous">' +
         (previous ? metricValue(prev, field.unit) : "-") +
@@ -886,15 +896,19 @@ function renderMetricArea(type) {
     return;
   }
 
-  var oldHtml = '<div class="metric-old"><div class="metric-old-title">Registros antigos</div>';
+  var oldHtml =
+    '<div class="metric-old"><div class="metric-old-title">Registros antigos</div>';
   old.forEach(function (rec) {
     oldHtml += '<details class="metric-old-item">';
-    oldHtml += '<summary><span>' + fd(rec.date) + '</span><span>Ver dados</span></summary>';
+    oldHtml +=
+      "<summary><span>" +
+      fd(rec.date) +
+      "</span><span>Ver dados</span></summary>";
     oldHtml += '<div class="metric-old-grid">';
     cfg.fields.forEach(function (field) {
       var value = rec.values ? rec.values[field.key] : "";
       oldHtml +=
-        '<div><span>' +
+        "<div><span>" +
         field.label +
         "</span><strong>" +
         metricValue(value, field.unit) +
@@ -907,7 +921,8 @@ function renderMetricArea(type) {
 }
 
 function renderMetrics() {
-  if (metricActiveTab !== "body" && metricActiveTab !== "composition") metricActiveTab = "body";
+  if (metricActiveTab !== "body" && metricActiveTab !== "composition")
+    metricActiveTab = "body";
   renderMetricSummary();
   renderMetricTabs();
   renderMetricActiveArea();
@@ -966,23 +981,50 @@ function fatPercent(rec) {
 function metricDeltaText(diff, unit) {
   if (diff === null || diff === undefined || isNaN(diff)) return "Sem anterior";
   if (diff === 0) return "0" + metricUnitSuffix(unit);
-  return (diff < 0 ? "&darr; " : "&uarr; +") + fmt(diff, 1) + metricUnitSuffix(unit);
+  return (
+    (diff < 0 ? "&darr; " : "&uarr; +") + fmt(diff, 1) + metricUnitSuffix(unit)
+  );
 }
 
 function metricSummaryItem(label, value, unit, diff, goodWhenDown) {
   var cls = "metric-flat";
   var text = metricDeltaText(diff, unit);
   if (diff !== null && diff !== undefined && !isNaN(diff)) {
-    cls = diff === 0 ? "metric-flat" : goodWhenDown ? diff < 0 ? "metric-up" : "metric-down" : diff > 0 ? "metric-up" : "metric-down";
+    cls =
+      diff === 0
+        ? "metric-flat"
+        : goodWhenDown
+          ? diff < 0
+            ? "metric-up"
+            : "metric-down"
+          : diff > 0
+            ? "metric-up"
+            : "metric-down";
   }
-  return '<div class="metric-summary-item"><span>' + label + "</span><strong>" + value + '</strong><em class="' + cls + '">' + text + "</em></div>";
+  return (
+    '<div class="metric-summary-item"><span>' +
+    label +
+    "</span><strong>" +
+    value +
+    '</strong><em class="' +
+    cls +
+    '">' +
+    text +
+    "</em></div>"
+  );
 }
 
 function renderMetricSummary() {
   var el = document.getElementById("metric-summary");
   if (!el) return;
-  var weightRecs = metricRecordsForField("composition", metricField("composition", "weight"));
-  var fatRecs = metricRecordsForField("composition", { key: "fatPercent", unit: "%" });
+  var weightRecs = metricRecordsForField(
+    "composition",
+    metricField("composition", "weight"),
+  );
+  var fatRecs = metricRecordsForField("composition", {
+    key: "fatPercent",
+    unit: "%",
+  });
   var waistRecs = metricRecordsForField("body", metricField("body", "waist"));
   var curComp = weightRecs[0];
   var prevComp = weightRecs[1];
@@ -996,11 +1038,33 @@ function renderMetricSummary() {
   var prevFat = fatPercent(prevFatComp);
   var curWaist = curBody && curBody.values ? curBody.values.waist : "";
   var prevWaist = prevBody && prevBody.values ? prevBody.values.waist : "";
-  var waistDiff = curWaist !== "" && prevWaist !== "" ? metricDisplayNumber(curWaist - prevWaist, "cm") : null;
-  var html = '<div class="metric-summary-head"><span>Acompanhamento corporal</span><strong>&Uacute;ltimos dados</strong></div><div class="metric-summary-grid">';
-  html += metricSummaryItem("Peso atual", curWeight === "" ? "-" : metricValue(curWeight, "kg"), "kg", curWeight !== "" && prevWeight !== "" ? curWeight - prevWeight : null, true);
-  html += metricSummaryItem("Gordura atual", curFat === null ? "-" : fmt(curFat, 1) + "%", "%", curFat !== null && prevFat !== null ? curFat - prevFat : null, true);
-  html += metricSummaryItem("Cintura atual", curWaist === "" ? "-" : metricValue(curWaist, "cm"), metricBodyUnit, waistDiff, true);
+  var waistDiff =
+    curWaist !== "" && prevWaist !== ""
+      ? metricDisplayNumber(curWaist - prevWaist, "cm")
+      : null;
+  var html =
+    '<div class="metric-summary-head"><span>Acompanhamento corporal</span><strong>&Uacute;ltimos dados</strong></div><div class="metric-summary-grid">';
+  html += metricSummaryItem(
+    "Peso atual",
+    curWeight === "" ? "-" : metricValue(curWeight, "kg"),
+    "kg",
+    curWeight !== "" && prevWeight !== "" ? curWeight - prevWeight : null,
+    true,
+  );
+  html += metricSummaryItem(
+    "Gordura atual",
+    curFat === null ? "-" : fmt(curFat, 1) + "%",
+    "%",
+    curFat !== null && prevFat !== null ? curFat - prevFat : null,
+    true,
+  );
+  html += metricSummaryItem(
+    "Cintura atual",
+    curWaist === "" ? "-" : metricValue(curWaist, "cm"),
+    metricBodyUnit,
+    waistDiff,
+    true,
+  );
   html += "</div>";
   el.innerHTML = html;
 }
@@ -1011,18 +1075,38 @@ function renderMetricActiveArea() {
   if (!root || !cfg) return;
   destroyMetricChart();
   var html = '<section class="metric-panel metric-area">';
-  html += '<div class="metric-panel-head"><div><span class="metric-kicker">' + cfg.title + "</span><h2>" + cfg.shortTitle + "</h2></div>";
+  html +=
+    '<div class="metric-panel-head"><div><span class="metric-kicker">' +
+    cfg.title +
+    "</span><h2>" +
+    cfg.shortTitle +
+    "</h2></div>";
   html += '<div class="metric-unit-group">';
   if (metricActiveTab === "body") {
-    html += '<button class="' + (metricBodyUnit === "cm" ? "active" : "") + '" onclick="setMetricBodyUnit(\'cm\')">cm</button>';
-    html += '<button class="' + (metricBodyUnit === "in" ? "active" : "") + '" onclick="setMetricBodyUnit(\'in\')">in</button>';
+    html +=
+      '<button class="' +
+      (metricBodyUnit === "cm" ? "active" : "") +
+      '" onclick="setMetricBodyUnit(\'cm\')">cm</button>';
+    html +=
+      '<button class="' +
+      (metricBodyUnit === "in" ? "active" : "") +
+      '" onclick="setMetricBodyUnit(\'in\')">in</button>';
   } else {
     html += "<span>kg / %</span>";
   }
   html += "</div></div>";
   html += renderMetricCompare(metricActiveTab);
   html += renderMetricChartPanel(metricActiveTab);
-  html += '<button class="metric-add-btn" onclick="toggleMetricForm(\'' + metricActiveTab + '\')">' + (metricFormOpen[metricActiveTab] ? "Fechar registro" : metricActiveTab === "body" ? "Registrar medidas" : "Registrar bioimped&acirc;ncia") + "</button>";
+  html +=
+    '<button class="metric-add-btn" onclick="toggleMetricForm(\'' +
+    metricActiveTab +
+    "')\">" +
+    (metricFormOpen[metricActiveTab]
+      ? "Fechar registro"
+      : metricActiveTab === "body"
+        ? "Registrar medidas"
+        : "Registrar bioimped&acirc;ncia") +
+    "</button>";
   if (metricFormOpen[metricActiveTab]) html += metricFormHtml(metricActiveTab);
   html += renderMetricHistory(metricActiveTab);
   html += "</section>";
@@ -1032,11 +1116,26 @@ function renderMetricActiveArea() {
 
 function metricFormHtml(type) {
   var cfg = metricConfig[type];
-  var html = '<div class="metric-form"><div class="mfield metric-date-field"><label>Data</label><input type="date" id="metric-' + type + '-date" value="' + new Date().toISOString().slice(0, 10) + '" /></div><div class="metric-grid">';
+  var html =
+    '<div class="metric-form"><div class="mfield metric-date-field"><label>Data</label><input type="date" id="metric-' +
+    type +
+    '-date" value="' +
+    new Date().toISOString().slice(0, 10) +
+    '" /></div><div class="metric-grid">';
   cfg.fields.forEach(function (field) {
-    html += '<div class="mfield"><label>' + field.label + '</label><input type="number" id="' + metricInputId(type, field.key) + '" min="0" step="any" inputmode="decimal" /></div>';
+    html +=
+      '<div class="mfield"><label>' +
+      field.label +
+      '</label><input type="number" id="' +
+      metricInputId(type, field.key) +
+      '" min="0" step="any" inputmode="decimal" /></div>';
   });
-  html += '</div><button class="btn btn-blue" onclick="saveMetricRecord(\'' + type + "')\">" + cfg.saveLabel + "</button></div>";
+  html +=
+    '</div><button class="btn btn-blue" onclick="saveMetricRecord(\'' +
+    type +
+    "')\">" +
+    cfg.saveLabel +
+    "</button></div>";
   return html;
 }
 
@@ -1045,7 +1144,13 @@ function metricDeltaClass(type, key, diff) {
   var goodUp = type === "composition" && (key === "lean" || key === "muscle");
   var goodDown = key === "waist" || key === "fatPercent";
   if (!goodUp && !goodDown) return "metric-flat";
-  return goodUp ? diff > 0 ? "metric-up" : "metric-down" : diff < 0 ? "metric-up" : "metric-down";
+  return goodUp
+    ? diff > 0
+      ? "metric-up"
+      : "metric-down"
+    : diff < 0
+      ? "metric-up"
+      : "metric-down";
 }
 
 function metricField(type, key) {
@@ -1056,7 +1161,16 @@ function metricField(type, key) {
 
 function metricDisplayFields(type) {
   if (type === "body") {
-    return ["waist", "calf", "thigh", "glute", "chest", "biceps", "forearm", "neck"].map(function (key) {
+    return [
+      "waist",
+      "calf",
+      "thigh",
+      "glute",
+      "chest",
+      "biceps",
+      "forearm",
+      "neck",
+    ].map(function (key) {
       return metricField(type, key);
     });
   }
@@ -1073,7 +1187,9 @@ function metricRecordNumber(rec, field) {
   if (!rec || !field) return null;
   if (field.key === "fatPercent") return fatPercent(rec);
   var value = rec.values ? rec.values[field.key] : "";
-  return field.unit === "cm" ? metricDisplayNumber(value, field.unit) : parseFloat(value);
+  return field.unit === "cm"
+    ? metricDisplayNumber(value, field.unit)
+    : parseFloat(value);
 }
 
 function metricRecordValue(rec, field) {
@@ -1092,16 +1208,36 @@ function metricRecordsForField(type, field) {
 function renderMetricCompare(type) {
   var recs = metricRecords(type);
   var current = recs[0];
-  if (!current) return '<div class="metric-empty">Salve a primeira medição para iniciar o acompanhamento.</div>';
-  var html = '<div class="metric-compare"><div class="metric-section-title"><span>Atual vs anterior</span><strong>' + fd(current.date) + "</strong></div>";
+  if (!current)
+    return '<div class="metric-empty">Salve a primeira medição para iniciar o acompanhamento.</div>';
+  var html =
+    '<div class="metric-compare"><div class="metric-section-title"><span>Atual vs anterior</span><strong>' +
+    fd(current.date) +
+    "</strong></div>";
   metricDisplayFields(type).forEach(function (field) {
     var fieldRecs = metricRecordsForField(type, field);
     var fieldCurrent = fieldRecs[0];
     var fieldPrevious = fieldRecs[1];
     var curNum = metricRecordNumber(fieldCurrent, field);
     var prevNum = metricRecordNumber(fieldPrevious, field);
-    var diff = curNum !== null && prevNum !== null && !isNaN(curNum) && !isNaN(prevNum) ? curNum - prevNum : null;
-    html += '<div class="metric-compare-card"><div><span>' + field.label + "</span><strong>" + metricRecordValue(fieldCurrent, field) + '</strong><small>Anterior: ' + metricRecordValue(fieldPrevious, field) + '</small></div><em class="' + (diff === null ? "metric-flat" : metricDeltaClass(type, field.key, diff)) + '">' + metricDeltaText(diff, metricDisplayUnit(field)) + "</em></div>";
+    var diff =
+      curNum !== null && prevNum !== null && !isNaN(curNum) && !isNaN(prevNum)
+        ? curNum - prevNum
+        : null;
+    html +=
+      '<div class="metric-compare-card"><div><span>' +
+      field.label +
+      "</span><strong>" +
+      metricRecordValue(fieldCurrent, field) +
+      "</strong><small>Anterior: " +
+      metricRecordValue(fieldPrevious, field) +
+      '</small></div><em class="' +
+      (diff === null
+        ? "metric-flat"
+        : metricDeltaClass(type, field.key, diff)) +
+      '">' +
+      metricDeltaText(diff, metricDisplayUnit(field)) +
+      "</em></div>";
   });
   html += "</div>";
   return html;
@@ -1113,17 +1249,45 @@ function metricChartOptions(type) {
       { key: "waist", label: "Cintura", field: metricField(type, "waist") },
       { key: "calf", label: "Panturrilha", field: metricField(type, "calf") },
       { key: "thigh", label: "Coxa", field: metricField(type, "thigh") },
-      { key: "glute", label: "Gl&uacute;teo", field: metricField(type, "glute") },
-      { key: "chest", label: "T&oacute;rax", field: metricField(type, "chest") },
-      { key: "biceps", label: "B&iacute;ceps", field: metricField(type, "biceps") },
-      { key: "forearm", label: "Antebra&ccedil;o", field: metricField(type, "forearm") },
-      { key: "neck", label: "Pesco&ccedil;o", field: metricField(type, "neck") },
+      {
+        key: "glute",
+        label: "Gl&uacute;teo",
+        field: metricField(type, "glute"),
+      },
+      {
+        key: "chest",
+        label: "T&oacute;rax",
+        field: metricField(type, "chest"),
+      },
+      {
+        key: "biceps",
+        label: "B&iacute;ceps",
+        field: metricField(type, "biceps"),
+      },
+      {
+        key: "forearm",
+        label: "Antebra&ccedil;o",
+        field: metricField(type, "forearm"),
+      },
+      {
+        key: "neck",
+        label: "Pesco&ccedil;o",
+        field: metricField(type, "neck"),
+      },
     ];
   }
   return [
     { key: "weight", label: "Peso", field: metricField(type, "weight") },
-    { key: "fatPercent", label: "% Gordura", field: { key: "fatPercent", unit: "%" } },
-    { key: "muscle", label: "Massa muscular", field: metricField(type, "muscle") },
+    {
+      key: "fatPercent",
+      label: "% Gordura",
+      field: { key: "fatPercent", unit: "%" },
+    },
+    {
+      key: "muscle",
+      label: "Massa muscular",
+      field: metricField(type, "muscle"),
+    },
     { key: "lean", label: "Massa magra", field: metricField(type, "lean") },
     { key: "water", label: "&Aacute;gua", field: metricField(type, "water") },
   ];
@@ -1133,24 +1297,42 @@ function renderMetricChartPanel(type) {
   var options = metricChartOptions(type);
   var selected = options.some(function (opt) {
     return opt.key === metricChartMode[type];
-  }) ? metricChartMode[type] : options[0].key;
+  })
+    ? metricChartMode[type]
+    : options[0].key;
   metricChartMode[type] = selected;
-  var html = '<div class="metric-chart-panel"><div class="metric-chart-head"><span>Evolu&ccedil;&atilde;o</span><select class="metric-chart-select" aria-label="M&eacute;trica do gr&aacute;fico" onchange="setMetricChartMode(this.value)">';
+  var html =
+    '<div class="metric-chart-panel"><div class="metric-chart-head"><span>Evolu&ccedil;&atilde;o</span><select class="metric-chart-select" aria-label="M&eacute;trica do gr&aacute;fico" onchange="setMetricChartMode(this.value)">';
   options.forEach(function (opt) {
-    html += '<option value="' + opt.key + '"' + (selected === opt.key ? " selected" : "") + ">" + opt.label + "</option>";
+    html +=
+      '<option value="' +
+      opt.key +
+      '"' +
+      (selected === opt.key ? " selected" : "") +
+      ">" +
+      opt.label +
+      "</option>";
   });
-  html += '</select></div><div id="metric-progress-chart" class="metric-chart-wrap"></div></div>';
+  html +=
+    '</select></div><div id="metric-progress-chart" class="metric-chart-wrap"></div></div>';
   return html;
 }
 
 function metricChartData(type) {
   var options = metricChartOptions(type);
-  var opt = options.find(function (item) { return item.key === metricChartMode[type]; }) || options[0];
-  return metricRecords(type).slice(0, 7).reverse().map(function (rec) {
-    return { date: rec.date, value: metricRecordNumber(rec, opt.field) };
-  }).filter(function (item) {
-    return item.value !== null && !isNaN(item.value);
-  });
+  var opt =
+    options.find(function (item) {
+      return item.key === metricChartMode[type];
+    }) || options[0];
+  return metricRecords(type)
+    .slice(0, 7)
+    .reverse()
+    .map(function (rec) {
+      return { date: rec.date, value: metricRecordNumber(rec, opt.field) };
+    })
+    .filter(function (item) {
+      return item.value !== null && !isNaN(item.value);
+    });
 }
 
 function destroyMetricChart() {
@@ -1164,7 +1346,8 @@ function renderMetricChart() {
   var data = metricChartData(metricActiveTab);
   destroyMetricChart();
   if (data.length < 2) {
-    chartRoot.innerHTML = '<div class="metric-empty metric-chart-empty">O gráfico aparece após dois registros da métrica selecionada.</div>';
+    chartRoot.innerHTML =
+      '<div class="metric-empty metric-chart-empty">O gráfico aparece após dois registros da métrica selecionada.</div>';
     return;
   }
   chartRoot.innerHTML = lineHistoryChart(data, function (value) {
@@ -1177,16 +1360,45 @@ function renderMetricHistory(type) {
   var recs = metricRecords(type);
   var total = metricRecords(type).length;
   if (!recs.length) return "";
-  var html = '<details class="metric-history"><summary>Ver hist&oacute;rico completo (' + total + ")</summary>";
+  var html =
+    '<details class="metric-history"><summary>Ver hist&oacute;rico completo (' +
+    total +
+    ")</summary>";
   recs.forEach(function (rec, index) {
-    var filled = cfg.fields.filter(function (field) { return rec.values && rec.values[field.key] !== undefined && rec.values[field.key] !== ""; });
-    var historyFields = type === "composition" ? metricDisplayFields(type).concat([metricField(type, "fat")]) : metricDisplayFields(type);
-    var badge = index === 0 ? "Atual" : index === 1 ? "Anterior" : "Hist&oacute;rico";
-    html += '<details class="metric-history-card"><summary><div><strong>' + fd(rec.date) + "</strong><span>" + filled.length + ' m&eacute;tricas registradas &bull; ' + badge + '</span></div><div class="metric-history-actions"><em>Ver detalhes</em><button type="button" onclick="deleteMetricRecord(\'' + type + "', '" + rec.id + "', event)\">Excluir</button></div></summary><div class=\"metric-history-grid\">";
+    var filled = cfg.fields.filter(function (field) {
+      return (
+        rec.values &&
+        rec.values[field.key] !== undefined &&
+        rec.values[field.key] !== ""
+      );
+    });
+    var historyFields =
+      type === "composition"
+        ? metricDisplayFields(type).concat([metricField(type, "fat")])
+        : metricDisplayFields(type);
+    var badge =
+      index === 0 ? "Atual" : index === 1 ? "Anterior" : "Hist&oacute;rico";
+    html +=
+      '<details class="metric-history-card"><summary><div><strong>' +
+      fd(rec.date) +
+      "</strong><span>" +
+      filled.length +
+      " m&eacute;tricas registradas &bull; " +
+      badge +
+      '</span></div><div class="metric-history-actions"><em>Ver detalhes</em><button type="button" onclick="deleteMetricRecord(\'' +
+      type +
+      "', '" +
+      rec.id +
+      '\', event)">Excluir</button></div></summary><div class="metric-history-grid">';
     historyFields.forEach(function (field) {
       var value = metricRecordNumber(rec, field);
       if (value === null || isNaN(value)) return;
-      html += '<div><span>' + field.label + "</span><strong>" + metricRecordValue(rec, field) + "</strong></div>";
+      html +=
+        "<div><span>" +
+        field.label +
+        "</span><strong>" +
+        metricRecordValue(rec, field) +
+        "</strong></div>";
     });
     html += "</div></details>";
   });
@@ -1346,59 +1558,199 @@ function openExamSummary() {
   examData.forEach(function (sec) {
     (sec.exams || []).forEach(function (name) {
       var recs = sortRecs(getRecs(sec.id, name));
-      if (recs.length) exams.push({ sid: sec.id, section: sec.name, name: name, count: recs.length });
+      if (recs.length)
+        exams.push({
+          sid: sec.id,
+          section: sec.name,
+          name: name,
+          count: recs.length,
+        });
     });
   });
   if (!exams.length) {
     alert("Registre pelo menos um resultado antes de gerar um resumo.");
     return;
   }
-  options.innerHTML = exams.map(function (exam, index) {
-    var id = "summary-exam-" + index;
-    return '<label class="summary-option" for="' + id + '"><input type="checkbox" id="' + id + '" data-sid="' + esc(exam.sid) + '" data-name="' + esc(exam.name) + '" data-section="' + esc(exam.section) + '"><span><strong>' + esc(exam.name) + '</strong><small>' + esc(exam.section) + ' · ' + exam.count + ' resultado' + (exam.count === 1 ? '' : 's') + '</small></span></label>';
-  }).join("");
+  options.innerHTML = exams
+    .map(function (exam, index) {
+      var id = "summary-exam-" + index;
+      return (
+        '<label class="summary-option" for="' +
+        id +
+        '"><input type="checkbox" id="' +
+        id +
+        '" data-sid="' +
+        esc(exam.sid) +
+        '" data-name="' +
+        esc(exam.name) +
+        '" data-section="' +
+        esc(exam.section) +
+        '"><span><strong>' +
+        esc(exam.name) +
+        "</strong><small>" +
+        esc(exam.section) +
+        " · " +
+        exam.count +
+        " resultado" +
+        (exam.count === 1 ? "" : "s") +
+        "</small></span></label>"
+      );
+    })
+    .join("");
   document.getElementById("m-exam-summary").classList.add("show");
 }
 
 function pdfHexText(value) {
-  var text = String(value == null ? "" : value).replace(/[—–]/g, "-").replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  var text = String(value == null ? "" : value)
+    .replace(/[—–]/g, "-")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
   var out = "";
   for (var i = 0; i < text.length; i++) {
     var code = text.charCodeAt(i);
     if (code > 255) {
-      var normalized = text.charAt(i).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      code = normalized.length && normalized.charCodeAt(0) <= 255 ? normalized.charCodeAt(0) : 63;
+      var normalized = text
+        .charAt(i)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      code =
+        normalized.length && normalized.charCodeAt(0) <= 255
+          ? normalized.charCodeAt(0)
+          : 63;
     }
     out += code.toString(16).padStart(2, "0");
   }
   return "<" + out + ">";
 }
 
+function examResultNumber(value) {
+  var text = String(value == null ? "" : value)
+    .trim()
+    .replace(/[−–—]/g, "-");
+  if (/^[<>≤≥]/.test(text)) return null;
+  var match = text.match(/[-+]?\d[\d.,]*/);
+  if (!match) return null;
+  var number = match[0];
+  var commas = (number.match(/,/g) || []).length;
+  var dots = (number.match(/\./g) || []).length;
+  if (commas && dots) {
+    if (number.lastIndexOf(",") > number.lastIndexOf("."))
+      number = number.replace(/\./g, "").replace(",", ".");
+    else number = number.replace(/,/g, "");
+  } else if (commas > 1) {
+    var commaParts = number.split(",");
+    number = commaParts.slice(1).every(function (part) {
+      return part.length === 3;
+    })
+      ? commaParts.join("")
+      : commaParts.slice(0, -1).join("") +
+        "." +
+        commaParts[commaParts.length - 1];
+  } else if (commas === 1) {
+    number = number.replace(",", ".");
+  } else if (dots > 1) {
+    var dotParts = number.split(".");
+    number = dotParts.slice(1).every(function (part) {
+      return part.length === 3;
+    })
+      ? dotParts.join("")
+      : dotParts.slice(0, -1).join("") + "." + dotParts[dotParts.length - 1];
+  }
+  var parsed = Number(number);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function buildExamSummaryPdf(exams) {
-  var pageWidth = 842, pageHeight = 595, chartX = 82, chartW = 690, chartY = 185, chartH = 190;
+  var pageWidth = 842,
+    pageHeight = 595,
+    chartX = 82,
+    chartW = 690,
+    chartY = 185,
+    chartH = 190;
   var pages = [];
   exams.forEach(function (exam) {
     var recs = sortRecs(getRecs(exam.sid, exam.name));
-    var values = recs.slice().reverse().map(function (rec) {
-      return { value: parseFloat(String(rec.result).replace(",", ".")), date: rec.date, unit: rec.unit };
-    }).filter(function (rec) { return Number.isFinite(rec.value); });
+    var values = recs
+      .slice()
+      .reverse()
+      .map(function (rec) {
+        return {
+          value: examResultNumber(rec.result),
+          date: rec.date,
+          unit: rec.unit,
+        };
+      })
+      .filter(function (rec) {
+        return rec.value !== null;
+      });
     var chunks = [];
-    for (var start = 0; start < values.length; start += 20) chunks.push(values.slice(start, start + 20));
+    for (var start = 0; start < values.length; start += 20)
+      chunks.push(values.slice(start, start + 20));
     if (!chunks.length) chunks.push([]);
 
     chunks.forEach(function (chunk, chunkIndex) {
       var ops = [];
       function text(x, yTop, size, value, bold, color) {
         var y = pageHeight - yTop;
-        ops.push("BT " + (color || "0.12 0.17 0.23") + " rg /F" + (bold ? "2" : "1") + " " + size + " Tf 1 0 0 1 " + x + " " + y + " Tm " + pdfHexText(value) + " Tj ET");
+        ops.push(
+          "BT " +
+            (color || "0.12 0.17 0.23") +
+            " rg /F" +
+            (bold ? "2" : "1") +
+            " " +
+            size +
+            " Tf 1 0 0 1 " +
+            x +
+            " " +
+            y +
+            " Tm " +
+            pdfHexText(value) +
+            " Tj ET",
+        );
       }
       function line(x1, y1, x2, y2, color, width) {
-        ops.push((color || "0.88 0.91 0.94") + " RG " + (width || 1) + " w " + x1 + " " + (pageHeight - y1) + " m " + x2 + " " + (pageHeight - y2) + " l S");
+        ops.push(
+          (color || "0.88 0.91 0.94") +
+            " RG " +
+            (width || 1) +
+            " w " +
+            x1 +
+            " " +
+            (pageHeight - y1) +
+            " m " +
+            x2 +
+            " " +
+            (pageHeight - y2) +
+            " l S",
+        );
       }
       text(48, 50, 21, exam.name, true);
-      text(48, 75, 10, exam.section + "  |  " + recs.length + " registros no histórico", false, "0.38 0.43 0.50");
-      var rangeText = values.length ? "Pontos " + (chunkIndex * 20 + 1) + "–" + (chunkIndex * 20 + chunk.length) + " de " + values.length : "Sem resultados numéricos para o gráfico";
-      text(48, 125, 12, "Evolução numérica" + (chunks.length > 1 ? " (continuação " + (chunkIndex + 1) + "/" + chunks.length + ")" : ""), true);
+      text(
+        48,
+        75,
+        10,
+        exam.section + "  |  " + recs.length + " registros no histórico",
+        false,
+        "0.38 0.43 0.50",
+      );
+      var rangeText = values.length
+        ? "Pontos " +
+          (chunkIndex * 20 + 1) +
+          "–" +
+          (chunkIndex * 20 + chunk.length) +
+          " de " +
+          values.length
+        : "Sem resultados numéricos para o gráfico";
+      text(
+        48,
+        125,
+        12,
+        "Evolução numérica" +
+          (chunks.length > 1
+            ? " (continuação " + (chunkIndex + 1) + "/" + chunks.length + ")"
+            : ""),
+        true,
+      );
       text(48, 145, 9, rangeText, false, "0.38 0.43 0.50");
 
       for (var grid = 0; grid < 4; grid++) {
@@ -1406,27 +1758,129 @@ function buildExamSummaryPdf(exams) {
         line(chartX, gy, chartX + chartW, gy, "0.90 0.92 0.95", 0.7);
       }
       if (chunk.length) {
-        var min = Math.min.apply(null, chunk.map(function (v) { return v.value; }));
-        var max = Math.max.apply(null, chunk.map(function (v) { return v.value; }));
-        if (min === max) { min -= Math.abs(min * 0.05) || 1; max += Math.abs(max * 0.05) || 1; }
-        var points = chunk.map(function (v, i) { return {
-          x: chartX + (chunk.length === 1 ? chartW / 2 : i * chartW / (chunk.length - 1)),
-          y: chartY + chartH - ((v.value - min) / (max - min)) * chartH,
-          value: v.value, date: v.date, unit: v.unit,
-        }; });
-        for (var p = 1; p < points.length; p++) line(points[p - 1].x, points[p - 1].y, points[p].x, points[p].y, "0.09 0.62 0.40", 2.5);
+        var min = Math.min.apply(
+          null,
+          chunk.map(function (v) {
+            return v.value;
+          }),
+        );
+        var max = Math.max.apply(
+          null,
+          chunk.map(function (v) {
+            return v.value;
+          }),
+        );
+        if (min === max) {
+          min -= Math.abs(min * 0.05) || 1;
+          max += Math.abs(max * 0.05) || 1;
+        }
+        var points = chunk.map(function (v, i) {
+          return {
+            x:
+              chartX +
+              (chunk.length === 1
+                ? chartW / 2
+                : (i * chartW) / (chunk.length - 1)),
+            y: chartY + chartH - ((v.value - min) / (max - min)) * chartH,
+            value: v.value,
+            date: v.date,
+            unit: v.unit,
+          };
+        });
+        for (var p = 1; p < points.length; p++)
+          line(
+            points[p - 1].x,
+            points[p - 1].y,
+            points[p].x,
+            points[p].y,
+            "0.09 0.62 0.40",
+            2.5,
+          );
         points.forEach(function (point, pointIndex) {
           var py = pageHeight - point.y;
-          var radius = 3.2, curve = radius * 0.5523;
-          ops.push("0.09 0.62 0.40 rg " + (point.x + radius) + " " + py + " m " + (point.x + radius) + " " + (py + curve) + " " + (point.x + curve) + " " + (py + radius) + " " + point.x + " " + (py + radius) + " c " + (point.x - curve) + " " + (py + radius) + " " + (point.x - radius) + " " + (py + curve) + " " + (point.x - radius) + " " + py + " c " + (point.x - radius) + " " + (py - curve) + " " + (point.x - curve) + " " + (py - radius) + " " + point.x + " " + (py - radius) + " c " + (point.x + curve) + " " + (py - radius) + " " + (point.x + radius) + " " + (py - curve) + " " + (point.x + radius) + " " + py + " c f");
-          var label = String(chunk[pointIndex].value) + (point.unit ? " " + point.unit : "");
-          text(point.x - 15, point.y - (pointIndex % 2 ? 12 : 23), 8, label, true, "0.12 0.17 0.23");
+          var radius = 3.2,
+            curve = radius * 0.5523;
+          ops.push(
+            "0.09 0.62 0.40 rg " +
+              (point.x + radius) +
+              " " +
+              py +
+              " m " +
+              (point.x + radius) +
+              " " +
+              (py + curve) +
+              " " +
+              (point.x + curve) +
+              " " +
+              (py + radius) +
+              " " +
+              point.x +
+              " " +
+              (py + radius) +
+              " c " +
+              (point.x - curve) +
+              " " +
+              (py + radius) +
+              " " +
+              (point.x - radius) +
+              " " +
+              (py + curve) +
+              " " +
+              (point.x - radius) +
+              " " +
+              py +
+              " c " +
+              (point.x - radius) +
+              " " +
+              (py - curve) +
+              " " +
+              (point.x - curve) +
+              " " +
+              (py - radius) +
+              " " +
+              point.x +
+              " " +
+              (py - radius) +
+              " c " +
+              (point.x + curve) +
+              " " +
+              (py - radius) +
+              " " +
+              (point.x + radius) +
+              " " +
+              (py - curve) +
+              " " +
+              (point.x + radius) +
+              " " +
+              py +
+              " c f",
+          );
+          var label =
+            String(chunk[pointIndex].value) +
+            (point.unit ? " " + point.unit : "");
+          text(
+            point.x - 15,
+            point.y - (pointIndex % 2 ? 12 : 23),
+            8,
+            label,
+            true,
+            "0.12 0.17 0.23",
+          );
         });
         var tickCount = Math.min(5, points.length);
         for (var tick = 0; tick < tickCount; tick++) {
-          var tickIndex = Math.round(tick * (points.length - 1) / Math.max(1, tickCount - 1));
+          var tickIndex = Math.round(
+            (tick * (points.length - 1)) / Math.max(1, tickCount - 1),
+          );
           var tickX = points[tickIndex].x;
-          text(tickX - 16, chartY + chartH + 17, 8, fd(points[tickIndex].date), false, "0.38 0.43 0.50");
+          text(
+            tickX - 16,
+            chartY + chartH + 17,
+            8,
+            fd(points[tickIndex].date),
+            false,
+            "0.38 0.43 0.50",
+          );
         }
       }
 
@@ -1440,30 +1894,85 @@ function buildExamSummaryPdf(exams) {
           var y = 466 + index * 27;
           line(50, y + 7, 790, y + 7, "0.91 0.93 0.95", 0.5);
           text(55, y, 9, fd(rec.date) || "-", false);
-          text(185, y, 9, String(rec.result) + (rec.unit ? " " + rec.unit : ""), true);
-          text(345, y, 8, String(rec.notes || "").slice(0, 92), false, "0.38 0.43 0.50");
+          text(
+            185,
+            y,
+            9,
+            String(rec.result) + (rec.unit ? " " + rec.unit : ""),
+            true,
+          );
+          text(
+            345,
+            y,
+            8,
+            String(rec.notes || "").slice(0, 92),
+            false,
+            "0.38 0.43 0.50",
+          );
         });
       }
-      text(48, 582, 8, "CalcDose  |  Gerado em " + new Date().toLocaleDateString("pt-BR") + "  |  Página " + (pages.length + 1), false, "0.48 0.52 0.58");
+      text(
+        48,
+        582,
+        8,
+        "CalcDose  |  Gerado em " +
+          new Date().toLocaleDateString("pt-BR") +
+          "  |  Página " +
+          (pages.length + 1),
+        false,
+        "0.48 0.52 0.58",
+      );
       pages.push(ops.join("\n"));
     });
   });
 
   var objects = [null];
-  function addObject(value) { objects.push(value); return objects.length - 1; }
+  function addObject(value) {
+    objects.push(value);
+    return objects.length - 1;
+  }
   var catalogId = addObject("");
   var pagesId = addObject("");
-  var regularFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
-  var boldFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  var regularFontId = addObject(
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+  );
+  var boldFontId = addObject(
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+  );
   var pageIds = [];
   pages.forEach(function (content) {
     var stream = content + "\n";
-    var contentId = addObject("<< /Length " + stream.length + " >>\nstream\n" + stream + "endstream");
-    var pageId = addObject("<< /Type /Page /Parent " + pagesId + " 0 R /MediaBox [0 0 " + pageWidth + " " + pageHeight + "] /Resources << /Font << /F1 " + regularFontId + " 0 R /F2 " + boldFontId + " 0 R >> >> /Contents " + contentId + " 0 R >>");
+    var contentId = addObject(
+      "<< /Length " + stream.length + " >>\nstream\n" + stream + "endstream",
+    );
+    var pageId = addObject(
+      "<< /Type /Page /Parent " +
+        pagesId +
+        " 0 R /MediaBox [0 0 " +
+        pageWidth +
+        " " +
+        pageHeight +
+        "] /Resources << /Font << /F1 " +
+        regularFontId +
+        " 0 R /F2 " +
+        boldFontId +
+        " 0 R >> >> /Contents " +
+        contentId +
+        " 0 R >>",
+    );
     pageIds.push(pageId);
   });
   objects[catalogId] = "<< /Type /Catalog /Pages " + pagesId + " 0 R >>";
-  objects[pagesId] = "<< /Type /Pages /Kids [" + pageIds.map(function (id) { return id + " 0 R"; }).join(" ") + "] /Count " + pageIds.length + " >>";
+  objects[pagesId] =
+    "<< /Type /Pages /Kids [" +
+    pageIds
+      .map(function (id) {
+        return id + " 0 R";
+      })
+      .join(" ") +
+    "] /Count " +
+    pageIds.length +
+    " >>";
   var pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
   var offsets = [0];
   for (var objectIndex = 1; objectIndex < objects.length; objectIndex++) {
@@ -1472,38 +1981,90 @@ function buildExamSummaryPdf(exams) {
   }
   var xrefOffset = pdf.length;
   pdf += "xref\n0 " + objects.length + "\n0000000000 65535 f \n";
-  for (var offsetIndex = 1; offsetIndex < objects.length; offsetIndex++) pdf += String(offsets[offsetIndex]).padStart(10, "0") + " 00000 n \n";
-  pdf += "trailer\n<< /Size " + objects.length + " /Root " + catalogId + " 0 R >>\nstartxref\n" + xrefOffset + "\n%%EOF";
+  for (var offsetIndex = 1; offsetIndex < objects.length; offsetIndex++)
+    pdf += String(offsets[offsetIndex]).padStart(10, "0") + " 00000 n \n";
+  pdf +=
+    "trailer\n<< /Size " +
+    objects.length +
+    " /Root " +
+    catalogId +
+    " 0 R >>\nstartxref\n" +
+    xrefOffset +
+    "\n%%EOF";
   var bytes = new Uint8Array(pdf.length);
-  for (var byteIndex = 0; byteIndex < pdf.length; byteIndex++) bytes[byteIndex] = pdf.charCodeAt(byteIndex) & 255;
+  for (var byteIndex = 0; byteIndex < pdf.length; byteIndex++)
+    bytes[byteIndex] = pdf.charCodeAt(byteIndex) & 255;
   return new Blob([bytes], { type: "application/pdf" });
 }
 
 async function generateExamSummary() {
-  var selected = Array.from(document.querySelectorAll("#exam-summary-options input:checked"));
-  if (!selected.length) { alert("Selecione pelo menos um exame."); return; }
+  var selected = Array.from(
+    document.querySelectorAll("#exam-summary-options input:checked"),
+  );
+  if (!selected.length) {
+    alert("Selecione pelo menos um exame.");
+    return;
+  }
   var button = document.getElementById("exam-summary-generate");
   button.disabled = true;
   button.textContent = "Gerando…";
   try {
-    var exams = selected.map(function (box) { return { sid: box.dataset.sid, name: box.dataset.name, section: box.dataset.section }; });
-    var safeName = "calcdose-resumo-exames-" + new Date().toISOString().slice(0, 10) + ".pdf";
-    examSummaryFile = new File([buildExamSummaryPdf(exams)], safeName, { type: "application/pdf" });
+    var exams = selected.map(function (box) {
+      return {
+        sid: box.dataset.sid,
+        name: box.dataset.name,
+        section: box.dataset.section,
+      };
+    });
+    var safeName =
+      "calcdose-resumo-exames-" +
+      new Date().toISOString().slice(0, 10) +
+      ".pdf";
+    examSummaryFile = new File([buildExamSummaryPdf(exams)], safeName, {
+      type: "application/pdf",
+    });
     closeM("m-exam-summary");
     var status = document.getElementById("exam-summary-status");
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [examSummaryFile] })) {
-      await navigator.share({ files: [examSummaryFile], title: "Resumo de exames · CalcDose" });
-      status.textContent = "PDF compartilhado. O resumo não foi salvo no histórico do app.";
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [examSummaryFile] })
+    ) {
+      await navigator.share({
+        files: [examSummaryFile],
+        title: "Resumo de exames · CalcDose",
+      });
+      status.textContent =
+        "PDF compartilhado. O resumo não foi salvo no histórico do app.";
     } else {
-      status.innerHTML = "PDF pronto. Baixe o arquivo para compartilhar pelo WhatsApp ou outro app: <button class=\"summary-download\" type=\"button\" onclick=\"downloadExamSummaryPdf()\">" + esc(examSummaryFile.name) + "</button>";
+      offerExamSummaryDownload(
+        "PDF pronto. Baixe o arquivo para compartilhar pelo WhatsApp ou outro app:",
+      );
     }
   } catch (error) {
-    if (error && error.name === "AbortError") return;
-    alert("Não foi possível gerar ou compartilhar o resumo neste aparelho. " + (error.message || ""));
+    if (examSummaryFile) {
+      offerExamSummaryDownload(
+        error && error.name === "AbortError"
+          ? "Compartilhamento cancelado. O PDF continua pronto para baixar:"
+          : "O compartilhamento direto não funcionou. O PDF está pronto para baixar:",
+      );
+    } else {
+      alert(
+        "Não foi possível gerar o PDF neste aparelho. " + (error.message || ""),
+      );
+    }
   } finally {
     button.disabled = false;
     button.textContent = "Gerar PDF";
   }
+}
+
+function offerExamSummaryDownload(message) {
+  document.getElementById("exam-summary-status").innerHTML =
+    message +
+    ' <button class="summary-download" type="button" onclick="downloadExamSummaryPdf()">' +
+    esc(examSummaryFile.name) +
+    "</button>";
 }
 
 function downloadExamSummaryPdf() {
@@ -1513,7 +2074,9 @@ function downloadExamSummaryPdf() {
   link.href = url;
   link.download = examSummaryFile.name;
   link.click();
-  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  setTimeout(function () {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 function sparkline(values) {

@@ -86,7 +86,9 @@
 
           <div class="auth-actions">
             <a class="auth-link" onclick="createAccount()">Criar conta</a>
-            <a class="forgot-link" onclick="recoverPassword()">Esqueci minha senha</a>
+            <a class="forgot-link" onclick="recoverPassword()"
+              >Esqueci minha senha</a
+            >
           </div>
 
           <button class="social-btn" onclick="loginWithGoogle()">
@@ -807,15 +809,37 @@
           </div>
         </div>
         <div class="content">
-          <section class="share-summary-panel" aria-labelledby="share-summary-title">
+          <section
+            class="share-summary-panel"
+            aria-labelledby="share-summary-title"
+          >
             <div class="share-summary-copy">
               <span class="metric-kicker">Compartilhamento</span>
               <h2 id="share-summary-title">Resumo para compartilhar</h2>
-              <p>Selecione exames para gerar um PDF com o gráfico de evolução e os quatro resultados mais recentes de cada exame. O resumo não fica salvo no app.</p>
+              <p>
+                Selecione exames para gerar um PDF com o gráfico de evolução e
+                os quatro resultados mais recentes de cada exame. O resumo não
+                fica salvo no app.
+              </p>
             </div>
-            <button class="btn btn-green" type="button" onclick="openExamSummary()">Selecionar exames</button>
-            <div id="exam-summary-picker" class="exam-summary-picker" hidden></div>
-            <div id="exam-summary-status" class="exam-summary-status" role="status" aria-live="polite"></div>
+            <button
+              class="btn btn-green"
+              type="button"
+              onclick="openExamSummary()"
+            >
+              Selecionar exames
+            </button>
+            <div
+              id="exam-summary-picker"
+              class="exam-summary-picker"
+              hidden
+            ></div>
+            <div
+              id="exam-summary-status"
+              class="exam-summary-status"
+              role="status"
+              aria-live="polite"
+            ></div>
           </section>
           <div class="esecs" id="exam-container"></div>
           <button class="add-sec-btn" onclick="openSecModal()">
@@ -833,20 +857,54 @@
         </div>
       </div>
 
-      <div class="moverlay" id="m-exam-summary" onclick="mOvClose(event, 'm-exam-summary')">
+      <div
+        class="moverlay"
+        id="m-exam-summary"
+        onclick="mOvClose(event, 'm-exam-summary')"
+      >
         <div class="modal summary-modal">
           <div class="modal-handle"></div>
           <div class="mhdr">
             <span class="mtitle">Selecionar exames</span>
-            <button class="mclose" type="button" onclick="closeM('m-exam-summary')" aria-label="Fechar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button
+              class="mclose"
+              type="button"
+              onclick="closeM('m-exam-summary')"
+              aria-label="Fechar"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
-          <p class="summary-modal-intro">Será criado um único PDF com o histórico numérico no gráfico e somente os quatro registros mais recentes de cada exame. Os dados são processados neste aparelho.</p>
+          <p class="summary-modal-intro">
+            Será criado um único PDF com o histórico numérico no gráfico e
+            somente os quatro registros mais recentes de cada exame. Os dados
+            são processados neste aparelho.
+          </p>
           <div id="exam-summary-options" class="exam-summary-options"></div>
           <div class="mactions summary-modal-actions">
-            <button class="btn btn-ghost" type="button" onclick="closeM('m-exam-summary')">Cancelar</button>
-            <button class="btn btn-green" id="exam-summary-generate" type="button" onclick="generateExamSummary()">Gerar PDF</button>
+            <button
+              class="btn btn-ghost"
+              type="button"
+              onclick="closeM('m-exam-summary')"
+            >
+              Cancelar
+            </button>
+            <button
+              class="btn btn-green"
+              id="exam-summary-generate"
+              type="button"
+              onclick="generateExamSummary()"
+            >
+              Gerar PDF
+            </button>
           </div>
         </div>
       </div>
@@ -872,10 +930,18 @@
 
           <div class="metric-sticky-tabs">
             <div class="tabs metric-tabs">
-              <button id="metric-tab-body" class="tab-btn active" onclick="setMetricTab('body')">
+              <button
+                id="metric-tab-body"
+                class="tab-btn active"
+                onclick="setMetricTab('body')"
+              >
                 Medidas
               </button>
-              <button id="metric-tab-composition" class="tab-btn" onclick="setMetricTab('composition')">
+              <button
+                id="metric-tab-composition"
+                class="tab-btn"
+                onclick="setMetricTab('composition')"
+              >
                 Bioimped&acirc;ncia
               </button>
             </div>
@@ -884,106 +950,174 @@
           <div id="metric-active-content"></div>
 
           <div class="metric-v1-legacy" hidden>
-          <div class="metrics-intro">
-            <span>Acompanhamento corporal</span>
-            <strong>Compare o registro atual com o anterior.</strong>
-          </div>
-
-          <div class="metric-panel">
-            <div class="metric-panel-head">
-              <div>
-                <span class="metric-kicker">Medidas corporais</span>
-                <h2>Perímetros</h2>
-              </div>
-              <span class="metric-pill">cm</span>
+            <div class="metrics-intro">
+              <span>Acompanhamento corporal</span>
+              <strong>Compare o registro atual com o anterior.</strong>
             </div>
 
-            <div class="mfield">
-              <label>Data</label>
-              <input type="date" id="legacy-metric-body-date" />
-            </div>
-            <div class="metric-grid">
-              <div class="mfield">
-                <label>Panturrilha</label>
-                <input type="number" id="legacy-metric-body-calf" min="0" step="any" />
+            <div class="metric-panel">
+              <div class="metric-panel-head">
+                <div>
+                  <span class="metric-kicker">Medidas corporais</span>
+                  <h2>Perímetros</h2>
+                </div>
+                <span class="metric-pill">cm</span>
               </div>
-              <div class="mfield">
-                <label>Coxa</label>
-                <input type="number" id="legacy-metric-body-thigh" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Glúteo</label>
-                <input type="number" id="legacy-metric-body-glute" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Cintura</label>
-                <input type="number" id="legacy-metric-body-waist" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Tórax</label>
-                <input type="number" id="legacy-metric-body-chest" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Bíceps</label>
-                <input type="number" id="legacy-metric-body-biceps" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Antebraço</label>
-                <input type="number" id="legacy-metric-body-forearm" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Pescoço</label>
-                <input type="number" id="legacy-metric-body-neck" min="0" step="any" />
-              </div>
-            </div>
-            <button class="btn btn-blue" onclick="saveMetricRecord('body')">
-              Salvar medidas
-            </button>
-            <div id="metric-body-compare"></div>
-            <div id="metric-body-old"></div>
-          </div>
 
-          <div class="metric-panel">
-            <div class="metric-panel-head">
-              <div>
-                <span class="metric-kicker">Composição corporal</span>
-                <h2>Bioimpedância</h2>
+              <div class="mfield">
+                <label>Data</label>
+                <input type="date" id="legacy-metric-body-date" />
               </div>
-              <span class="metric-pill">kg / %</span>
+              <div class="metric-grid">
+                <div class="mfield">
+                  <label>Panturrilha</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-calf"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Coxa</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-thigh"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Glúteo</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-glute"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Cintura</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-waist"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Tórax</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-chest"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Bíceps</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-biceps"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Antebraço</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-forearm"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Pescoço</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-body-neck"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+              </div>
+              <button class="btn btn-blue" onclick="saveMetricRecord('body')">
+                Salvar medidas
+              </button>
+              <div id="metric-body-compare"></div>
+              <div id="metric-body-old"></div>
             </div>
 
-            <div class="mfield">
-              <label>Data</label>
-              <input type="date" id="legacy-metric-composition-date" />
+            <div class="metric-panel">
+              <div class="metric-panel-head">
+                <div>
+                  <span class="metric-kicker">Composição corporal</span>
+                  <h2>Bioimpedância</h2>
+                </div>
+                <span class="metric-pill">kg / %</span>
+              </div>
+
+              <div class="mfield">
+                <label>Data</label>
+                <input type="date" id="legacy-metric-composition-date" />
+              </div>
+              <div class="metric-grid">
+                <div class="mfield">
+                  <label>Peso</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-composition-weight"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Massa magra</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-composition-lean"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Massa gorda</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-composition-fat"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Água</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-composition-water"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+                <div class="mfield">
+                  <label>Massa muscular</label>
+                  <input
+                    type="number"
+                    id="legacy-metric-composition-muscle"
+                    min="0"
+                    step="any"
+                  />
+                </div>
+              </div>
+              <button
+                class="btn btn-green"
+                onclick="saveMetricRecord('composition')"
+              >
+                Salvar composição
+              </button>
+              <div id="metric-composition-compare"></div>
+              <div id="metric-composition-old"></div>
             </div>
-            <div class="metric-grid">
-              <div class="mfield">
-                <label>Peso</label>
-                <input type="number" id="legacy-metric-composition-weight" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Massa magra</label>
-                <input type="number" id="legacy-metric-composition-lean" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Massa gorda</label>
-                <input type="number" id="legacy-metric-composition-fat" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Água</label>
-                <input type="number" id="legacy-metric-composition-water" min="0" step="any" />
-              </div>
-              <div class="mfield">
-                <label>Massa muscular</label>
-                <input type="number" id="legacy-metric-composition-muscle" min="0" step="any" />
-              </div>
-            </div>
-            <button class="btn btn-green" onclick="saveMetricRecord('composition')">
-              Salvar composição
-            </button>
-            <div id="metric-composition-compare"></div>
-            <div id="metric-composition-old"></div>
-          </div>
           </div>
         </div>
       </div>
@@ -1154,7 +1288,11 @@
 
       <!-- MODAL HISTORICO ANTIGO -->
 
-      <div class="moverlay" id="m-oldhist" onclick="mOvClose(event, 'm-oldhist')">
+      <div
+        class="moverlay"
+        id="m-oldhist"
+        onclick="mOvClose(event, 'm-oldhist')"
+      >
         <div class="modal">
           <div class="modal-handle"></div>
           <div class="mhdr">
@@ -1179,6 +1317,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=pdf-summary-2"></script>
   </body>
 </html>
