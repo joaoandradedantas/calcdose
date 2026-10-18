@@ -807,6 +807,16 @@
           </div>
         </div>
         <div class="content">
+          <section class="share-summary-panel" aria-labelledby="share-summary-title">
+            <div class="share-summary-copy">
+              <span class="metric-kicker">Compartilhamento</span>
+              <h2 id="share-summary-title">Resumo para compartilhar</h2>
+              <p>Selecione exames para gerar imagens com o histórico completo, gráfico de evolução e os quatro resultados mais recentes. O resumo não fica salvo no app.</p>
+            </div>
+            <button class="btn btn-green" type="button" onclick="openExamSummary()">Selecionar exames</button>
+            <div id="exam-summary-picker" class="exam-summary-picker" hidden></div>
+            <div id="exam-summary-status" class="exam-summary-status" role="status" aria-live="polite"></div>
+          </section>
           <div class="esecs" id="exam-container"></div>
           <button class="add-sec-btn" onclick="openSecModal()">
             <svg
@@ -820,6 +830,24 @@
             </svg>
             Adicionar nova seção
           </button>
+        </div>
+      </div>
+
+      <div class="moverlay" id="m-exam-summary" onclick="mOvClose(event, 'm-exam-summary')">
+        <div class="modal summary-modal">
+          <div class="modal-handle"></div>
+          <div class="mhdr">
+            <span class="mtitle">Selecionar exames</span>
+            <button class="mclose" type="button" onclick="closeM('m-exam-summary')" aria-label="Fechar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p class="summary-modal-intro">Cada exame selecionado gera uma imagem com todos os resultados do histórico. Os dados são processados neste aparelho.</p>
+          <div id="exam-summary-options" class="exam-summary-options"></div>
+          <div class="mactions summary-modal-actions">
+            <button class="btn btn-ghost" type="button" onclick="closeM('m-exam-summary')">Cancelar</button>
+            <button class="btn btn-green" id="exam-summary-generate" type="button" onclick="generateExamSummary()">Gerar resumo</button>
+          </div>
         </div>
       </div>
 

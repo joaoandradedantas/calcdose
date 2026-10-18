@@ -570,6 +570,41 @@ body::before {
   overflow-y: auto;
 }
 
+.share-summary-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  padding: 1.125rem;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-xl);
+  background: var(--glass);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+.share-summary-copy h2 { margin: 0.2rem 0 0.35rem; color: var(--text); font-size: 1rem; }
+.share-summary-copy p { margin: 0; color: var(--text-muted); font-size: 0.8125rem; line-height: 1.5; }
+.share-summary-panel > .btn { grid-column: 2; grid-row: 1; white-space: nowrap; }
+.exam-summary-picker[hidden] { display: none; }
+.exam-summary-status { grid-column: 1 / -1; color: var(--text-sec); font-size: 0.8125rem; line-height: 1.6; }
+.summary-download { display: inline-block; margin: 0.35rem 0.4rem 0 0; padding: 0.45rem 0.65rem; border: 1px solid var(--border2); border-radius: 0.5rem; color: var(--text); background: var(--surface); cursor: pointer; }
+.summary-modal { max-width: 560px; }
+.summary-modal-intro { margin: -0.4rem 0 1rem; color: var(--text-muted); font-size: 0.8125rem; line-height: 1.5; }
+.exam-summary-options { display: grid; gap: 0.5rem; max-height: 52dvh; overflow: auto; }
+.summary-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--border2); border-radius: 0.75rem; cursor: pointer; }
+.summary-option:has(input:checked) { border-color: var(--green, #18a56b); background: var(--surface2); }
+.summary-option input { flex: 0 0 auto; margin-top: 0.2rem; accent-color: #18a56b; }
+.summary-option span { display: grid; gap: 0.2rem; }
+.summary-option strong { color: var(--text); font-size: 0.875rem; }
+.summary-option small { color: var(--text-muted); font-size: 0.75rem; }
+.summary-modal-actions { position: sticky; bottom: -2rem; padding-top: 0.75rem; background: var(--surface); }
+.summary-modal-actions .btn { flex: 1; }
+@media (max-width: 520px) {
+  .share-summary-panel { grid-template-columns: 1fr; }
+  .share-summary-panel > .btn { grid-column: 1; grid-row: auto; width: 100%; }
+}
+
 /* ═══════════════════════════════════════════════
         METRICS
         ═══════════════════════════════════════════════ */

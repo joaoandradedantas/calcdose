@@ -1336,6 +1336,154 @@ function historyChart(recs) {
 
   return lineHistoryChart(vals);
 }
+
+/* Resumos de exames são montados em memória e nunca entram em records/scheduleSave. */
+var examSummaryFiles = [];
+
+function openExamSummary() {
+  var options = document.getElementById("exam-summary-options");
+  var exams = [];
+  examData.forEach(function (sec) {
+    (sec.exams || []).forEach(function (name) {
+      var recs = sortRecs(getRecs(sec.id, name));
+      if (recs.length) exams.push({ sid: sec.id, section: sec.name, name: name, count: recs.length });
+    });
+  });
+  if (!exams.length) {
+    alert("Registre pelo menos um resultado antes de gerar um resumo.");
+    return;
+  }
+  options.innerHTML = exams.map(function (exam, index) {
+    var id = "summary-exam-" + index;
+    return '<label class="summary-option" for="' + id + '"><input type="checkbox" id="' + id + '" data-sid="' + esc(exam.sid) + '" data-name="' + esc(exam.name) + '" data-section="' + esc(exam.section) + '"><span><strong>' + esc(exam.name) + '</strong><small>' + esc(exam.section) + ' · ' + exam.count + ' resultado' + (exam.count === 1 ? '' : 's') + '</small></span></label>';
+  }).join("");
+  document.getElementById("m-exam-summary").classList.add("show");
+}
+
+function drawExamSummary(exam) {
+  var recs = sortRecs(getRecs(exam.sid, exam.name));
+  var canvas = document.createElement("canvas");
+  canvas.width = 1000;
+  canvas.height = 900;
+  var ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#f7f9fc";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(40, 40, 920, 820);
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeRect(40, 40, 920, 820);
+  ctx.fillStyle = "#16a36a";
+  ctx.fillRect(40, 40, 10, 820);
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#182230";
+  ctx.font = "700 34px system-ui, sans-serif";
+  ctx.fillText(exam.name, 80, 72, 830);
+  ctx.fillStyle = "#667085";
+  ctx.font = "18px system-ui, sans-serif";
+  ctx.fillText(exam.section + " · Histórico completo: " + recs.length + " resultados", 80, 120, 830);
+  ctx.fillStyle = "#182230";
+  ctx.font = "700 20px system-ui, sans-serif";
+  ctx.fillText("Evolução", 80, 170);
+
+  var values = recs.slice().reverse().map(function (rec) {
+    return { value: parseFloat(String(rec.result).replace(",", ".")), date: rec.date, unit: rec.unit };
+  }).filter(function (rec) { return Number.isFinite(rec.value); });
+  var chart = { x: 100, y: 220, w: 800, h: 260 };
+  ctx.strokeStyle = "#e8edf3";
+  ctx.lineWidth = 1;
+  for (var grid = 0; grid < 4; grid++) {
+    var gy = chart.y + (chart.h * grid) / 3;
+    ctx.beginPath(); ctx.moveTo(chart.x, gy); ctx.lineTo(chart.x + chart.w, gy); ctx.stroke();
+  }
+  if (values.length) {
+    var min = Math.min.apply(null, values.map(function (v) { return v.value; }));
+    var max = Math.max.apply(null, values.map(function (v) { return v.value; }));
+    if (min === max) { min -= 1; max += 1; }
+    var pts = values.map(function (v, i) { return {
+      x: chart.x + (values.length === 1 ? chart.w / 2 : i * chart.w / (values.length - 1)),
+      y: chart.y + chart.h - ((v.value - min) / (max - min)) * chart.h,
+    }; });
+    ctx.beginPath();
+    pts.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    ctx.strokeStyle = "#18a56b"; ctx.lineWidth = 4; ctx.stroke();
+    pts.forEach(function (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fillStyle = "#18a56b"; ctx.fill(); });
+    var tickCount = Math.min(6, values.length);
+    ctx.fillStyle = "#667085"; ctx.font = "15px system-ui, sans-serif";
+    for (var t = 0; t < tickCount; t++) {
+      var vi = Math.round(t * (values.length - 1) / Math.max(1, tickCount - 1));
+      var tx = pts[vi].x;
+      ctx.textAlign = t === 0 ? "left" : (t === tickCount - 1 ? "right" : "center");
+      ctx.fillText(fd(values[vi].date), tx, chart.y + chart.h + 15);
+    }
+    ctx.textAlign = "left";
+  } else {
+    ctx.fillStyle = "#667085"; ctx.font = "18px system-ui, sans-serif";
+    ctx.fillText("Não há resultados numéricos para montar o gráfico.", chart.x, chart.y + 100);
+  }
+  ctx.fillStyle = "#182230";
+  ctx.font = "700 20px system-ui, sans-serif";
+  ctx.fillText("Últimos 4 resultados", 80, 535);
+  var recent = recs.slice(0, 4);
+  recent.forEach(function (rec, index) {
+    var y = 580 + index * 62;
+    ctx.fillStyle = index % 2 ? "#f7f9fc" : "#ffffff";
+    ctx.fillRect(80, y - 6, 830, 52);
+    ctx.fillStyle = "#344054"; ctx.font = "17px system-ui, sans-serif";
+    ctx.fillText(fd(rec.date) || "—", 96, y + 8);
+    ctx.fillStyle = "#182230"; ctx.font = "700 18px system-ui, sans-serif";
+    ctx.fillText(String(rec.result) + (rec.unit ? " " + rec.unit : ""), 300, y + 7, 590);
+  });
+  ctx.fillStyle = "#667085"; ctx.font = "14px system-ui, sans-serif";
+  ctx.fillText("Gerado no CalcDose · " + new Date().toLocaleDateString("pt-BR"), 80, 825);
+  return new Promise(function (resolve, reject) {
+    canvas.toBlob(function (blob) { if (blob) resolve(blob); else reject(new Error("Não foi possível criar a imagem.")); }, "image/png");
+  });
+}
+
+async function generateExamSummary() {
+  var selected = Array.from(document.querySelectorAll("#exam-summary-options input:checked"));
+  if (!selected.length) { alert("Selecione pelo menos um exame."); return; }
+  var button = document.getElementById("exam-summary-generate");
+  button.disabled = true;
+  button.textContent = "Gerando…";
+  try {
+    examSummaryFiles = [];
+    for (var i = 0; i < selected.length; i++) {
+      var box = selected[i];
+      var blob = await drawExamSummary({ sid: box.dataset.sid, name: box.dataset.name, section: box.dataset.section });
+      var safeName = box.dataset.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "exame";
+      examSummaryFiles.push(new File([blob], "calcdose-" + safeName + ".png", { type: "image/png" }));
+    }
+    closeM("m-exam-summary");
+    var status = document.getElementById("exam-summary-status");
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: examSummaryFiles })) {
+      await navigator.share({ files: examSummaryFiles, title: "Resumo de exames · CalcDose" });
+      status.textContent = "Resumo compartilhado. As imagens existem somente durante este envio.";
+    } else {
+      status.innerHTML = "Imagens prontas. Escolha uma para baixar e compartilhar pelo WhatsApp ou outro app: " + examSummaryFiles.map(function (file, index) {
+        return '<button class="summary-download" type="button" onclick="downloadExamSummary(' + index + ')">' + esc(file.name) + '</button>';
+      }).join("");
+    }
+  } catch (error) {
+    if (error && error.name === "AbortError") return;
+    alert("Não foi possível gerar ou compartilhar o resumo neste aparelho. " + (error.message || ""));
+  } finally {
+    button.disabled = false;
+    button.textContent = "Gerar resumo";
+  }
+}
+
+function downloadExamSummary(index) {
+  var file = examSummaryFiles[index];
+  if (!file) return;
+  var url = URL.createObjectURL(file);
+  var link = document.createElement("a");
+  link.href = url;
+  link.download = file.name;
+  link.click();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
 function sparkline(values) {
   if (!values || values.length < 2) return "";
 
