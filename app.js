@@ -1671,7 +1671,7 @@ function buildExamSummaryPdf(exams) {
   exams.forEach(function (exam) {
     var recs = sortRecs(getRecs(exam.sid, exam.name));
     var values = recs
-      .slice()
+      .slice(0, 4)
       .reverse()
       .map(function (rec) {
         return {
@@ -1734,23 +1734,9 @@ function buildExamSummaryPdf(exams) {
         "0.38 0.43 0.50",
       );
       var rangeText = values.length
-        ? "Pontos " +
-          (chunkIndex * 20 + 1) +
-          "–" +
-          (chunkIndex * 20 + chunk.length) +
-          " de " +
-          values.length
+        ? "Últimos " + values.length + " resultados numéricos"
         : "Sem resultados numéricos para o gráfico";
-      text(
-        48,
-        125,
-        12,
-        "Evolução numérica" +
-          (chunks.length > 1
-            ? " (continuação " + (chunkIndex + 1) + "/" + chunks.length + ")"
-            : ""),
-        true,
-      );
+      text(48, 125, 12, "Evolução dos últimos 4 registros", true);
       text(48, 145, 9, rangeText, false, "0.38 0.43 0.50");
 
       for (var grid = 0; grid < 4; grid++) {
@@ -2016,10 +2002,7 @@ async function generateExamSummary() {
         section: box.dataset.section,
       };
     });
-    var safeName =
-      "calcdose-resumo-exames-" +
-      new Date().toISOString().slice(0, 10) +
-      ".pdf";
+    var safeName = "Resumo de exames - Calcdose.pdf";
     examSummaryFile = new File([buildExamSummaryPdf(exams)], safeName, {
       type: "application/pdf",
     });
