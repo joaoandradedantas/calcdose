@@ -2016,8 +2016,9 @@ async function generateExamSummary() {
       await navigator.share({
         files: [examSummaryFile],
       });
-      status.textContent =
-        "PDF compartilhado. O resumo não foi salvo no histórico do app.";
+      offerExamSummaryDownload(
+        "O menu de compartilhamento foi aberto. Confira se o WhatsApp enviou a mensagem; se o envio falhar, baixe o PDF para reenviar:",
+      );
     } else {
       offerExamSummaryDownload(
         "PDF pronto. Baixe o arquivo para compartilhar pelo WhatsApp ou outro app:",
