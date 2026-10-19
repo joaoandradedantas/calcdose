@@ -2015,7 +2015,6 @@ async function generateExamSummary() {
     ) {
       await navigator.share({
         files: [examSummaryFile],
-        title: "Resumo de exames · CalcDose",
       });
       status.textContent =
         "PDF compartilhado. O resumo não foi salvo no histórico do app.";
